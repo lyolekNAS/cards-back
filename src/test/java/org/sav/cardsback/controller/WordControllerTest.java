@@ -1,10 +1,10 @@
-package org.sav.cards.controller;
+package org.sav.cardsback.controller;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
-import org.sav.cards.entity.Word;
-import org.sav.cards.repository.WordRepository;
+import org.sav.cardsback.entity.Word;
+import org.sav.cardsback.repository.WordRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.context.TestConfiguration;

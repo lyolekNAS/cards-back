@@ -1,4 +1,4 @@
-package org.sav.cards;
+package org.sav.cardsback;
 
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;

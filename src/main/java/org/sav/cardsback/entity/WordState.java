@@ -1,13 +1,15 @@
-package org.sav.cards.entity;
+package org.sav.cardsback.entity;
 
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import lombok.ToString;
 
 @Entity
 @Setter
 @Getter
+@ToString
 @NoArgsConstructor
 public class WordState {
 

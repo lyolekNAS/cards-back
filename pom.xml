@@ -9,10 +9,10 @@
 		<relativePath/> <!-- lookup parent from repository -->
 	</parent>
 	<groupId>org.sav</groupId>
-	<artifactId>cards</artifactId>
+	<artifactId>cards-back</artifactId>
 	<version>0.0.1-SNAPSHOT</version>
 	<packaging>jar</packaging>
-	<name>cards</name>
+	<name>cards-back</name>
 	<description>Language cards</description>
 	<url/>
 	<licenses>
@@ -91,7 +91,7 @@
 		<dependency>
 			<groupId>org.sav.fornas</groupId>
 			<artifactId>dto</artifactId>
-			<version>1.0-SNAPSHOT</version>
+			<version>1.0.3-SNAPSHOT</version>
 		</dependency>
 	</dependencies>
 
@@ -173,6 +173,13 @@
 		<repository>
 			<id>github</id>
 			<url>https://maven.pkg.github.com/lyolekNAS/dto</url>
+			<releases>
+				<enabled>true</enabled>
+			</releases>
+			<snapshots>
+				<enabled>true</enabled>
+				<updatePolicy>always</updatePolicy>
+			</snapshots>
 		</repository>
 	</repositories>
 

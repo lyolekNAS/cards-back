@@ -1,6 +1,6 @@
-package org.sav.cards.repository;
+package org.sav.cardsback.repository;
 
-import org.sav.cards.entity.Word;
+import org.sav.cardsback.entity.Word;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
@@ -15,7 +15,7 @@ public interface WordRepository extends JpaRepository<Word, Long> {
 	Word findByIdAndUserId(Long id, Long userId);
 
 
-	@Query("SELECT w FROM Word w WHERE w.userId = :userId AND w.state.id != 10")
+	@Query("SELECT w FROM Word w WHERE w.userId = :userId AND w.state.id in (1, 2, 3)")
 	List<Word> findByWordToTrain(
 			@Param("userId") Long userId
 	);
@@ -30,5 +30,5 @@ public interface WordRepository extends JpaRepository<Word, Long> {
 
 	@Modifying
 	@Query("UPDATE Word w SET w.state.id = :stateId WHERE w.id = :id")
-	void updateStateId(@Param("id") Long id, @Param("stateId") Integer stateId);
+	void updateState(@Param("id") Long id, @Param("stateId") Integer stateId);
 }

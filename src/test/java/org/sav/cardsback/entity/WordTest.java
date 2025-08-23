@@ -1,4 +1,4 @@
-package org.sav.cards.entity;
+package org.sav.cardsback.entity;
 
 
 import org.junit.jupiter.api.Tag;

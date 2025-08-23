@@ -1,10 +1,10 @@
-package org.sav.cards.controller;
+package org.sav.cardsback.controller;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.sav.cards.entity.Word;
-import org.sav.cards.mapper.WordMapper;
-import org.sav.cards.service.WordService;
+import org.sav.cardsback.entity.Word;
+import org.sav.cardsback.mapper.WordMapper;
+import org.sav.cardsback.service.WordService;
 import org.sav.fornas.dto.cards.TrainedWordDto;
 import org.sav.fornas.dto.cards.WordDto;
 import org.sav.fornas.dto.cards.WordLangDto;
@@ -39,11 +39,12 @@ public class WordController {
 
 	@PostMapping("/save")
 	public ResponseEntity<WordDto> addWord(@AuthenticationPrincipal Jwt jwt, @RequestBody WordDto wordDto) {
-		log.debug("Adding word for user {}", jwt.getClaim("userId").toString());
-
+		log.debug(">>> addWord({})", wordDto);
 		Word word = wordMapper.toEntity(wordDto);
 		word.setUserId(jwt.getClaim("userId"));
+		log.debug(">>> word {}", word);
 		Word saved = wordService.save(word);
+		log.debug(">>> saved {}", saved);
 		return ResponseEntity.ok(wordMapper.toDto(saved));
 	}
 
@@ -51,6 +52,8 @@ public class WordController {
 	public ResponseEntity<WordDto> findWord(@AuthenticationPrincipal Jwt jwt, @RequestParam("w") String w){
 		log.debug("findWord {} for user {}", w, jwt.getClaim("userId").toString());
 		Word word = wordService.findByUserIdAndEnglish(jwt.getClaim("userId"), w);
+		log.debug("word={}", word);
+		log.debug("wordDto={}", wordMapper.toDto(word));
 		return ResponseEntity.ok(wordMapper.toDto(word));
 	}
 

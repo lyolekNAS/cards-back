@@ -1,4 +1,4 @@
-package org.sav.cards.entity;
+package org.sav.cardsback.entity;
 
 
 import jakarta.persistence.*;

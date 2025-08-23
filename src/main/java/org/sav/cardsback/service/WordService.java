@@ -1,10 +1,10 @@
-package org.sav.cards.service;
+package org.sav.cardsback.service;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.sav.cards.entity.Word;
-import org.sav.cards.entity.WordState;
-import org.sav.cards.repository.WordRepository;
+import org.sav.cardsback.entity.Word;
+import org.sav.cardsback.entity.WordState;
+import org.sav.cardsback.repository.WordRepository;
 import org.sav.fornas.dto.cards.TrainedWordDto;
 import org.sav.fornas.dto.cards.WordLangDto;
 import org.sav.fornas.dto.cards.WordStateDto;
@@ -65,16 +65,16 @@ public class WordService {
 			log.debug(">>> count:{} newCount:{}", count, newCount);
 			if(trainedWordDto.getLang() == WordLangDto.EN) {
 				word.setEnglishCnt(newCount);
-//				wordRepository.updateEnglishCnt(word.getId(), newCount);
 			} else {
-//				wordRepository.updateUkrainianCnt(word.getId(), newCount);
 				word.setUkrainianCnt(newCount);
 			}
+			WordState newState;
 			if(word.getEnglishCnt() == 10 && word.getUkrainianCnt() == 10){
-				WordState newState = new WordState(WordStateDto.LEARNED.getValue());
-				word.setState(newState);
-//				word.getState().setId(WordStateDto.LEARNED.getValue());
+				newState = new WordState(WordStateDto.DONE.getValue());
+			} else {
+				newState = new WordState(WordStateDto.STAGE_1.getValue());
 			}
+			word.setState(newState);
 			word.setLastTrain(LocalDateTime.now());
 			wordRepository.save(word);
 			return true;
