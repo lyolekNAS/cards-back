@@ -71,6 +71,9 @@ public class WordController {
 		log.debug(">>> JWT протухне {}", jwt.getExpiresAt());
 		log.debug(">>> findWordToTrain for user {}", jwt.getClaim("userId").toString());
 		Word word = wordService.findWordToTrain(jwt.getClaim("userId"));
+		if(word == null){
+			return ResponseEntity.ok().build();
+		}
 		WordDto wordDto = wordMapper.toDto(word);
 		if (word.getEnglishCnt() < word.getUkrainianCnt()) {
 			wordDto.setLang(WordLangDto.EN);
