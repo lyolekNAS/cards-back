@@ -2,4 +2,4 @@ spring:
     application:
         name: cards-back
     config:
-        import: ${CONF_DIR}/${spring.application.name}/config.yaml,${CONF_DIR}/${spring.application.name}/database.yaml
+        import: ${CONF_DIR}/${spring.application.name}/config.yaml,vault://
