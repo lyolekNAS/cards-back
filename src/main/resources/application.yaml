@@ -2,4 +2,17 @@ spring:
     application:
         name: cards-back
     config:
-        import: ${CONF_DIR}/${spring.application.name}/config.yaml,vault://
+        import:
+            - configserver:${config.server.url}
+            - vault://
+    cloud:
+        config:
+            profile: ${spring.profiles.active}
+        vault:
+            uri: https://lyolek.synology.me:8200/
+            scheme: https
+            authentication: approle
+            kv:
+                enabled: true
+                backend: secret
+                default-context: ${spring.application.name}
