@@ -34,7 +34,7 @@ public class SecurityConfig {
 	@Bean
 	public JwtAuthenticationConverter jwtAuthenticationConverter() {
 		JwtGrantedAuthoritiesConverter rolesConverter = new JwtGrantedAuthoritiesConverter();
-		rolesConverter.setAuthorityPrefix(""); // або "ROLE_" якщо в токені просто ADMIN
+		rolesConverter.setAuthorityPrefix("");
 		rolesConverter.setAuthoritiesClaimName("roles");
 
 		JwtAuthenticationConverter converter = new JwtAuthenticationConverter();

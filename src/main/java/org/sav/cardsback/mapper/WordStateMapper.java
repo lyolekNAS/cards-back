@@ -1,7 +1,5 @@
 package org.sav.cardsback.mapper;
 
-import lombok.NoArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
 import org.mapstruct.Mapper;
 import org.sav.cardsback.entity.WordState;
 import org.sav.fornas.dto.cards.WordStateDto;

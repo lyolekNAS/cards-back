@@ -21,20 +21,22 @@ import java.util.Random;
 public class WordService {
 	private final WordRepository wordRepository;
 
-	public List<Word> findAllByUserId(Object userId) {
-		return wordRepository.findAllByUserId((Long) userId);
+	private final Random random = new Random();
+
+	public List<Word> findAllByUserId(Long userId) {
+		return wordRepository.findAllByUserId(userId);
 	}
 
 	public Word save(Word word) {
 		return wordRepository.save(word);
 	}
 
-	public Word findByUserIdAndEnglish(Object userId, String english) {
-		return wordRepository.findByUserIdAndEnglish((Long) userId, english);
+	public Word findByUserIdAndEnglish(Long userId, String english) {
+		return wordRepository.findByUserIdAndEnglish(userId, english);
 	}
 
-	public Word findByIdAndUserId(Long id, Object userId) {
-		return wordRepository.findByIdAndUserId(id, (Long) userId);
+	public Word findByIdAndUserId(Long id, Long userId) {
+		return wordRepository.findByIdAndUserId(id, userId);
 	}
 
 	public void delete(Word word) {
@@ -45,12 +47,11 @@ public class WordService {
 		return wordRepository.findAll();
 	}
 
-	public Word findWordToTrain(Object userId) {
-		List<Word> words = wordRepository.findByWordToTrain((Long) userId);
+	public Word findWordToTrain(Long userId) {
+		List<Word> words = wordRepository.findByWordToTrain(userId);
 		if (words.isEmpty()) {
 			return null;
 		}
-		Random random = new Random();
 		return words.get(random.nextInt(words.size()));
 	}
 
@@ -81,9 +82,4 @@ public class WordService {
 		}
 		return false;
 	}
-
-//	private void setWordDone(Long id){
-//		wordRepository.updateStateId(id, WordStateDto.LEARNED.getValue());
-//
-//	}
 }
