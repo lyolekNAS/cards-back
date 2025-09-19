@@ -55,7 +55,7 @@ jobs:
         uses: docker/build-push-action@v6
         with:
           push: true
-          tags: lyolek.synology.me:5555/nasa/user-service:latest
+          tags: lyolek.synology.me:5555/nasa/cards-back:latest
           secrets: | 
             github_token=${{ secrets.MY_GITHUB_TOKEN }}
           cache-from: type=gha,scope=maven
