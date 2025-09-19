@@ -7,10 +7,11 @@ WORKDIR /build
 COPY --chmod=0755 mvnw mvnw
 COPY .mvn/ .mvn/
 
-ARG GITHUB_TOKEN
 RUN --mount=type=bind,source=pom.xml,target=pom.xml \
-    --mount=type=cache,target=/root/.m2 \
-    GITHUB_TOKEN=$GITHUB_TOKEN ./mvnw -s .mvn/settings.xml dependency:go-offline -DskipTests
+    --mount=type=cache,target=/root/.m2  \
+    --mount=type=secret,id=github_token \
+    export GITHUB_TOKEN=$(cat /run/secrets/github_token) && \
+    ./mvnw -s .mvn/settings.xml dependency:go-offline -DskipTests
 
 
 
@@ -23,7 +24,9 @@ WORKDIR /build
 COPY ./src src/
 RUN --mount=type=bind,source=pom.xml,target=pom.xml \
     --mount=type=cache,target=/root/.m2 \
-    GITHUB_TOKEN=$GITHUB_TOKEN ./mvnw -s .mvn/settings.xml clean package -DskipTests && \
+    --mount=type=secret,id=github_token \
+    export GITHUB_TOKEN=$(cat /run/secrets/github_token) && \
+    ./mvnw -s .mvn/settings.xml clean package -DskipTests && \
     mv target/$(./mvnw help:evaluate -Dexpression=project.artifactId -q -DforceStdout)-$(./mvnw help:evaluate -Dexpression=project.version -q -DforceStdout).jar \
     target/app.jar
 
