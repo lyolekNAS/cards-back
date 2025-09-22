@@ -18,7 +18,7 @@ class WordStateMapperTest {
 
     @Test
     void toDto_validEntity_returnsCorrectEnum() {
-        WordState entity = new WordState(WordStateDto.PAUSED.getValue());
+        WordState entity = new WordState(WordStateDto.PAUSED.getId());
         WordStateDto dto = mapper.toDto(entity);
 
         assertEquals(WordStateDto.PAUSED, dto);
@@ -35,6 +35,6 @@ class WordStateMapperTest {
         WordState entity = mapper.toEntity(dto);
 
         assertNotNull(entity);
-        assertEquals(dto.getValue(), entity.getId());
+        assertEquals(dto.getId(), entity.getId());
     }
 }

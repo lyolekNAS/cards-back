@@ -1,6 +1,7 @@
 package org.sav.cardsback.repository;
 
 import org.sav.cardsback.entity.Word;
+import org.sav.fornas.dto.cards.WordDto;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
@@ -16,7 +17,7 @@ public interface WordRepository extends JpaRepository<Word, Long> {
 
 
 	@Query("SELECT w FROM Word w WHERE w.userId = :userId AND w.state.id in (1, 2, 3)")
-	List<Word> findByWordToTrain(
+	List<Word> findWordToTrain(
 			@Param("userId") Long userId
 	);
 

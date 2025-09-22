@@ -88,7 +88,7 @@ class WordRepositoryTest {
         createAndPersistWord("test3", "тест3", 1L, state3);
         createAndPersistWord("test4", "тест4", 1L, state4);
 
-        List<Word> result = wordRepository.findByWordToTrain(1L);
+        List<Word> result = wordRepository.findWordToTrain(1L);
 
         assertEquals(3, result.size());
         assertTrue(result.stream().allMatch(w -> 

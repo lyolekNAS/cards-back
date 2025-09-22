@@ -10,7 +10,7 @@ public interface WordStateMapper {
 	default WordStateDto toDto(WordState entity) {
 		if (entity == null) return null;
 		for (WordStateDto dto : WordStateDto.values()) {
-			if (dto.getValue() == entity.getId()) {
+			if (dto.getId() == entity.getId()) {
 				return dto;
 			}
 		}
@@ -19,7 +19,7 @@ public interface WordStateMapper {
 
 	default WordState toEntity(WordStateDto dto) {
 		if (dto == null) return null;
-		return new WordState(dto.getValue());
+		return new WordState(dto.getId());
 	}
 
 }
