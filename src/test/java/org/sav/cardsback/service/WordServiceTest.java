@@ -12,7 +12,6 @@ import org.sav.fornas.dto.cards.TrainedWordDto;
 import org.sav.fornas.dto.cards.WordLangDto;
 import org.sav.fornas.dto.cards.WordStateDto;
 
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 
@@ -30,7 +29,7 @@ class WordServiceTest {
     private WordService wordService;
 
     private Word testWord;
-    private Long userId = 1L;
+    private final Long userId = 1L;
 
     @BeforeEach
     void setUp() {
@@ -45,7 +44,7 @@ class WordServiceTest {
 
     @Test
     void findAllByUserId_ReturnsWords() {
-        List<Word> words = Arrays.asList(testWord);
+        List<Word> words = Collections.singletonList(testWord);
         when(wordRepository.findAllByUserId(userId)).thenReturn(words);
 
         List<Word> result = wordService.findAllByUserId(userId);
@@ -93,7 +92,7 @@ class WordServiceTest {
 
     @Test
     void findAll_ReturnsAllWords() {
-        List<Word> words = Arrays.asList(testWord);
+        List<Word> words = Collections.singletonList(testWord);
         when(wordRepository.findAll()).thenReturn(words);
 
         List<Word> result = wordService.findAll();
@@ -104,23 +103,23 @@ class WordServiceTest {
 
     @Test
     void findWordToTrain_ReturnsRandomWord() {
-        List<Word> words = Arrays.asList(testWord);
-        when(wordRepository.findByWordToTrain(userId)).thenReturn(words);
+        List<Word> words = Collections.singletonList(testWord);
+        when(wordRepository.findWordToTrain(userId)).thenReturn(words);
 
         Word result = wordService.findWordToTrain(userId);
 
         assertEquals(testWord, result);
-        verify(wordRepository).findByWordToTrain(userId);
+        verify(wordRepository).findWordToTrain(userId);
     }
 
     @Test
     void findWordToTrain_EmptyList_ReturnsNull() {
-        when(wordRepository.findByWordToTrain(userId)).thenReturn(Collections.emptyList());
+        when(wordRepository.findWordToTrain(userId)).thenReturn(Collections.emptyList());
 
         Word result = wordService.findWordToTrain(userId);
 
         assertNull(result);
-        verify(wordRepository).findByWordToTrain(userId);
+        verify(wordRepository).findWordToTrain(userId);
     }
 
     @Test
@@ -185,6 +184,6 @@ class WordServiceTest {
 
         wordService.processTrainedWord(dto, userId);
 
-        assertEquals(WordStateDto.DONE.getValue(), testWord.getState().getId());
+        assertEquals(WordStateDto.DONE.getId(), testWord.getState().getId());
     }
 }

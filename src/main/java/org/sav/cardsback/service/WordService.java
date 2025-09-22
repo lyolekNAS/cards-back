@@ -48,7 +48,7 @@ public class WordService {
 	}
 
 	public Word findWordToTrain(Long userId) {
-		List<Word> words = wordRepository.findByWordToTrain(userId);
+		List<Word> words = wordRepository.findWordToTrain(userId);
 		if (words.isEmpty()) {
 			return null;
 		}
@@ -71,9 +71,9 @@ public class WordService {
 			}
 			WordState newState;
 			if(word.getEnglishCnt() == 10 && word.getUkrainianCnt() == 10){
-				newState = new WordState(WordStateDto.DONE.getValue());
+				newState = new WordState(WordStateDto.DONE.getId());
 			} else {
-				newState = new WordState(WordStateDto.STAGE_1.getValue());
+				newState = new WordState(WordStateDto.STAGE_1.getId());
 			}
 			word.setState(newState);
 			word.setLastTrain(LocalDateTime.now());

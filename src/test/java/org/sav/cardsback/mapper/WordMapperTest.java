@@ -25,7 +25,7 @@ class WordMapperTest {
         word.setEnglish("hello");
         word.setUkrainian("привіт");
         word.setUserId(42L);
-        word.setState(new WordState(WordStateDto.STAGE_1.getValue()));
+        word.setState(new WordState(WordStateDto.STAGE_1.getId()));
 
         WordDto dto = mapper.toDto(word);
 
@@ -51,7 +51,7 @@ class WordMapperTest {
         assertEquals("world", word.getEnglish());
         assertEquals("світ", word.getUkrainian());
         assertNotNull(word.getState());
-        assertEquals(WordStateDto.STAGE_1.getValue(), word.getState().getId());
+        assertEquals(WordStateDto.STAGE_1.getId(), word.getState().getId());
     }
 
     @Test
