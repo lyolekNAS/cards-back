@@ -37,6 +37,9 @@ public class Word {
 	@Column
 	LocalDateTime lastTrain;
 
+	@Column
+	LocalDateTime nextTrain;
+
 	@ManyToOne
 	@JoinColumn(name = "state_id")
 	WordState state;

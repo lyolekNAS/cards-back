@@ -16,7 +16,7 @@ public interface WordRepository extends JpaRepository<Word, Long> {
 	Word findByIdAndUserId(Long id, Long userId);
 
 
-	@Query("SELECT w FROM Word w WHERE w.userId = :userId AND w.state.id in (1, 2, 3)")
+	@Query("SELECT w FROM Word w WHERE w.userId = :userId AND w.state.id not in (0, 10) AND (w.nextTrain IS NULL OR w.nextTrain <= CURRENT_TIMESTAMP)")
 	List<Word> findWordToTrain(
 			@Param("userId") Long userId
 	);

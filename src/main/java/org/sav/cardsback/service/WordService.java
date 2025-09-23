@@ -5,6 +5,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.sav.cardsback.entity.Word;
 import org.sav.cardsback.entity.WordState;
 import org.sav.cardsback.repository.WordRepository;
+import org.sav.fornas.dto.cards.StateLimitDto;
 import org.sav.fornas.dto.cards.TrainedWordDto;
 import org.sav.fornas.dto.cards.WordLangDto;
 import org.sav.fornas.dto.cards.WordStateDto;
@@ -13,6 +14,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Objects;
 import java.util.Random;
 
 @Service
@@ -20,6 +22,7 @@ import java.util.Random;
 @RequiredArgsConstructor
 public class WordService {
 	private final WordRepository wordRepository;
+	private final StateLimitService stateLimitService;
 
 	private final Random random = new Random();
 
@@ -70,8 +73,12 @@ public class WordService {
 				word.setUkrainianCnt(newCount);
 			}
 			WordState newState;
-			if(word.getEnglishCnt() == 10 && word.getUkrainianCnt() == 10){
-				newState = new WordState(WordStateDto.DONE.getId());
+			StateLimitDto stateLimit = stateLimitService.findById(word.getState().getId());
+			if(Objects.equals(word.getEnglishCnt(), stateLimit.getAttempt()) && Objects.equals(word.getUkrainianCnt(), stateLimit.getAttempt())){
+				newState = new WordState(stateLimit.getDelay() != 0 ? word.getState().getId() + 1 : WordStateDto.DONE.getId());
+				word.setNextTrain(LocalDateTime.now().plusDays(stateLimit.getDelay()));
+				word.setEnglishCnt(0);
+				word.setUkrainianCnt(0);
 			} else {
 				newState = new WordState(WordStateDto.STAGE_1.getId());
 			}
