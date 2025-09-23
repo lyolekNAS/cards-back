@@ -81,12 +81,12 @@ class WordRepositoryTest {
         WordState state1 = createAndPersistWordState(1);
         WordState state2 = createAndPersistWordState(2);
         WordState state3 = createAndPersistWordState(3);
-        WordState state4 = createAndPersistWordState(4);
+        WordState state0 = createAndPersistWordState(0);
 
         createAndPersistWord("test1", "тест1", 1L, state1);
         createAndPersistWord("test2", "тест2", 1L, state2);
         createAndPersistWord("test3", "тест3", 1L, state3);
-        createAndPersistWord("test4", "тест4", 1L, state4);
+        createAndPersistWord("test4", "тест4", 1L, state0);
 
         List<Word> result = wordRepository.findWordToTrain(1L);
 

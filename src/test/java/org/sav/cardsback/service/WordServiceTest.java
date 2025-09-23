@@ -7,7 +7,9 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.sav.cardsback.entity.Word;
+import org.sav.cardsback.entity.WordState;
 import org.sav.cardsback.repository.WordRepository;
+import org.sav.fornas.dto.cards.StateLimitDto;
 import org.sav.fornas.dto.cards.TrainedWordDto;
 import org.sav.fornas.dto.cards.WordLangDto;
 import org.sav.fornas.dto.cards.WordStateDto;
@@ -25,10 +27,14 @@ class WordServiceTest {
     @Mock
     private WordRepository wordRepository;
 
+    @Mock
+    private StateLimitService stateLimitService;
+
     @InjectMocks
     private WordService wordService;
 
     private Word testWord;
+    private StateLimitDto stateLimit;
     private final Long userId = 1L;
 
     @BeforeEach
@@ -40,6 +46,13 @@ class WordServiceTest {
         testWord.setUkrainian("тест");
         testWord.setEnglishCnt(5);
         testWord.setUkrainianCnt(3);
+        testWord.setState(new WordState(WordStateDto.STAGE_1.getId()));
+
+
+        stateLimit = new StateLimitDto();
+        stateLimit.setStateId(WordStateDto.STAGE_1.getId());
+        stateLimit.setAttempt(10);   // ліміт збігся з testWord
+        stateLimit.setDelay(0);      // щоб спрацював DONE
     }
 
     @Test
@@ -130,6 +143,7 @@ class WordServiceTest {
         dto.setSuccess(true);
 
         when(wordRepository.findByIdAndUserId(1L, userId)).thenReturn(testWord);
+        when(stateLimitService.findById(testWord.getState().getId())).thenReturn(stateLimit);
         when(wordRepository.save(any(Word.class))).thenReturn(testWord);
 
         boolean result = wordService.processTrainedWord(dto, userId);
@@ -147,6 +161,7 @@ class WordServiceTest {
         dto.setSuccess(false);
 
         when(wordRepository.findByIdAndUserId(1L, userId)).thenReturn(testWord);
+        when(stateLimitService.findById(testWord.getState().getId())).thenReturn(stateLimit);
         when(wordRepository.save(any(Word.class))).thenReturn(testWord);
 
         boolean result = wordService.processTrainedWord(dto, userId);
@@ -173,6 +188,7 @@ class WordServiceTest {
     void processTrainedWord_BothCountsMax_SetsDoneState() {
         testWord.setEnglishCnt(9);
         testWord.setUkrainianCnt(10);
+        testWord.setState(new WordState(WordStateDto.STAGE_3.getId()));
 
         TrainedWordDto dto = new TrainedWordDto();
         dto.setId(1L);
@@ -180,10 +196,13 @@ class WordServiceTest {
         dto.setSuccess(true);
 
         when(wordRepository.findByIdAndUserId(1L, userId)).thenReturn(testWord);
+        when(stateLimitService.findById(testWord.getState().getId())).thenReturn(stateLimit);
         when(wordRepository.save(any(Word.class))).thenReturn(testWord);
 
         wordService.processTrainedWord(dto, userId);
 
         assertEquals(WordStateDto.DONE.getId(), testWord.getState().getId());
+        assertEquals(0, testWord.getEnglishCnt());   // лічильники скинулись
+        assertEquals(0, testWord.getUkrainianCnt());
     }
 }
