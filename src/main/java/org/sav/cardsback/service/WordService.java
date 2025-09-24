@@ -59,34 +59,58 @@ public class WordService {
 	}
 
 	@Transactional
-	public boolean processTrainedWord(TrainedWordDto trainedWordDto, Long userId) {
-		Word word = wordRepository.findByIdAndUserId(trainedWordDto.getId(), userId);
-		if (word != null) {
-			int count = trainedWordDto.getLang() == WordLangDto.EN ? word.getEnglishCnt() : word.getUkrainianCnt();
-			int newCount = trainedWordDto.isSuccess() ? count + 1 : count/2;
-			newCount = Math.min(newCount, 10);
-			newCount = Math.max(newCount, 0);
-			log.debug(">>> count:{} newCount:{}", count, newCount);
-			if(trainedWordDto.getLang() == WordLangDto.EN) {
-				word.setEnglishCnt(newCount);
-			} else {
-				word.setUkrainianCnt(newCount);
-			}
-			WordState newState;
-			StateLimitDto stateLimit = stateLimitService.findById(word.getState().getId());
-			if(Objects.equals(word.getEnglishCnt(), stateLimit.getAttempt()) && Objects.equals(word.getUkrainianCnt(), stateLimit.getAttempt())){
-				newState = new WordState(stateLimit.getDelay() != 0 ? word.getState().getId() + 1 : WordStateDto.DONE.getId());
-				word.setNextTrain(LocalDateTime.now().plusDays(stateLimit.getDelay()));
-				word.setEnglishCnt(0);
-				word.setUkrainianCnt(0);
-			} else {
-				newState = new WordState(WordStateDto.STAGE_1.getId());
-			}
-			word.setState(newState);
-			word.setLastTrain(LocalDateTime.now());
-			wordRepository.save(word);
-			return true;
+	public boolean processTrainedWord(TrainedWordDto dto, Long userId) {
+		Word word = wordRepository.findByIdAndUserId(dto.getId(), userId);
+		if (word == null) {
+			return false;
 		}
-		return false;
+
+		if (dto.isSuccess()) {
+			handleSuccess(word, dto);
+		} else {
+			handleFailure(word);
+		}
+
+		word.setLastTrain(LocalDateTime.now());
+		wordRepository.save(word);
+		return true;
+	}
+
+	private void handleSuccess(Word word, TrainedWordDto dto) {
+		incrementCounter(word, dto.getLang());
+
+		StateLimitDto stateLimit = stateLimitService.findById(word.getState().getId());
+		boolean englishReady = word.getEnglishCnt() >= stateLimit.getAttempt();
+		boolean ukrainianReady = word.getUkrainianCnt() >= stateLimit.getAttempt();
+
+		if (englishReady && ukrainianReady) {
+			moveToNextState(word, stateLimit);
+		}
+	}
+
+	private void handleFailure(Word word) {
+		word.setEnglishCnt(0);
+		word.setUkrainianCnt(0);
+		word.setState(new WordState(WordStateDto.STAGE_1.getId()));
+	}
+
+	private void incrementCounter(Word word, WordLangDto lang) {
+		if (lang == WordLangDto.EN) {
+			word.setEnglishCnt(word.getEnglishCnt() + 1);
+		} else {
+			word.setUkrainianCnt(word.getUkrainianCnt() + 1);
+		}
+	}
+
+	private void moveToNextState(Word word, StateLimitDto stateLimit) {
+		boolean hasDelay = stateLimit.getDelay() != 0;
+		Integer nextStateId = hasDelay
+				? word.getState().getId() + 1
+				: WordStateDto.DONE.getId();
+
+		word.setState(new WordState(nextStateId));
+		word.setNextTrain(LocalDateTime.now().plusDays(stateLimit.getDelay()));
+		word.setEnglishCnt(0);
+		word.setUkrainianCnt(0);
 	}
 }

@@ -186,7 +186,7 @@ class WordControllerTest {
 	}
 
 	@Test
-	void processTrainedWord_error() throws Exception {
+	void processTrainedWord_wordNotFound() throws Exception {
 		TrainedWordDto trainedWordDto = new TrainedWordDto();
 		trainedWordDto.setId(1L);
 		trainedWordDto.setLang(WordLangDto.EN);

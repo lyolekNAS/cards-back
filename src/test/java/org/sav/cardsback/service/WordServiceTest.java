@@ -150,15 +150,16 @@ class WordServiceTest {
 
         assertTrue(result);
         assertEquals(6, testWord.getEnglishCnt());
+        assertNotNull(testWord.getLastTrain());
         verify(wordRepository).save(testWord);
     }
 
     @Test
-    void processTrainedWord_Failure_UkrainianLang_DecreasesCount() {
+    void processTrainedWord_Success_UkrainianLang_IncreasesCount() {
         TrainedWordDto dto = new TrainedWordDto();
         dto.setId(1L);
         dto.setLang(WordLangDto.UA);
-        dto.setSuccess(false);
+        dto.setSuccess(true);
 
         when(wordRepository.findByIdAndUserId(1L, userId)).thenReturn(testWord);
         when(stateLimitService.findById(testWord.getState().getId())).thenReturn(stateLimit);
@@ -167,7 +168,28 @@ class WordServiceTest {
         boolean result = wordService.processTrainedWord(dto, userId);
 
         assertTrue(result);
-        assertEquals(1, testWord.getUkrainianCnt());
+        assertEquals(4, testWord.getUkrainianCnt());
+        assertNotNull(testWord.getLastTrain());
+        verify(wordRepository).save(testWord);
+    }
+
+    @Test
+    void processTrainedWord_Failure_ResetsCountsAndState() {
+        TrainedWordDto dto = new TrainedWordDto();
+        dto.setId(1L);
+        dto.setLang(WordLangDto.EN);
+        dto.setSuccess(false);
+
+        when(wordRepository.findByIdAndUserId(1L, userId)).thenReturn(testWord);
+        when(wordRepository.save(any(Word.class))).thenReturn(testWord);
+
+        boolean result = wordService.processTrainedWord(dto, userId);
+
+        assertTrue(result);
+        assertEquals(0, testWord.getEnglishCnt());
+        assertEquals(0, testWord.getUkrainianCnt());
+        assertEquals(WordStateDto.STAGE_1.getId(), testWord.getState().getId());
+        assertNotNull(testWord.getLastTrain());
         verify(wordRepository).save(testWord);
     }
 
@@ -185,10 +207,34 @@ class WordServiceTest {
     }
 
     @Test
-    void processTrainedWord_BothCountsMax_SetsDoneState() {
+    void processTrainedWord_BothCountsReachLimit_AdvancesState() {
         testWord.setEnglishCnt(9);
         testWord.setUkrainianCnt(10);
-        testWord.setState(new WordState(WordStateDto.STAGE_3.getId()));
+        stateLimit.setDelay(7);
+
+        TrainedWordDto dto = new TrainedWordDto();
+        dto.setId(1L);
+        dto.setLang(WordLangDto.EN);
+        dto.setSuccess(true);
+
+        when(wordRepository.findByIdAndUserId(1L, userId)).thenReturn(testWord);
+        when(stateLimitService.findById(testWord.getState().getId())).thenReturn(stateLimit);
+        when(wordRepository.save(any(Word.class))).thenReturn(testWord);
+
+        wordService.processTrainedWord(dto, userId);
+
+        assertEquals(WordStateDto.STAGE_1.getId() + 1, testWord.getState().getId());
+        assertEquals(0, testWord.getEnglishCnt());
+        assertEquals(0, testWord.getUkrainianCnt());
+        assertNotNull(testWord.getNextTrain());
+        verify(wordRepository).save(testWord);
+    }
+
+    @Test
+    void processTrainedWord_BothCountsReachLimit_NoDelay_SetsDoneState() {
+        testWord.setEnglishCnt(9);
+        testWord.setUkrainianCnt(10);
+        stateLimit.setDelay(0);
 
         TrainedWordDto dto = new TrainedWordDto();
         dto.setId(1L);
@@ -202,7 +248,9 @@ class WordServiceTest {
         wordService.processTrainedWord(dto, userId);
 
         assertEquals(WordStateDto.DONE.getId(), testWord.getState().getId());
-        assertEquals(0, testWord.getEnglishCnt());   // лічильники скинулись
+        assertEquals(0, testWord.getEnglishCnt());
         assertEquals(0, testWord.getUkrainianCnt());
+        assertNotNull(testWord.getNextTrain());
+        verify(wordRepository).save(testWord);
     }
 }
