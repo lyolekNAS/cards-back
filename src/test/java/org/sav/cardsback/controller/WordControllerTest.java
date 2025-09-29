@@ -8,9 +8,7 @@ import org.sav.cardsback.entity.Word;
 import org.sav.cardsback.entity.WordState;
 import org.sav.cardsback.mapper.WordMapper;
 import org.sav.cardsback.service.WordService;
-import org.sav.fornas.dto.cards.TrainedWordDto;
-import org.sav.fornas.dto.cards.WordDto;
-import org.sav.fornas.dto.cards.WordLangDto;
+import org.sav.fornas.dto.cards.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
@@ -202,5 +200,17 @@ class WordControllerTest {
 				.andExpect(content().string("error"));
 
 		verify(wordService).processTrainedWord(any(TrainedWordDto.class), eq(userId));
+	}
+
+	@Test
+	void getStatistic() throws Exception {
+		StatisticDto statisticDto = new StatisticDto();
+		when(wordService.getStatistics(userId)).thenReturn(statisticDto);
+
+		mockMvc.perform(get("/api/word/statistic")
+					.with(mockJwt(userId)))
+				.andExpect(status().isOk());
+
+		verify(wordService).getStatistics(userId);
 	}
 }

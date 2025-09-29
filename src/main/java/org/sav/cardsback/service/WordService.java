@@ -5,16 +5,13 @@ import lombok.extern.slf4j.Slf4j;
 import org.sav.cardsback.entity.Word;
 import org.sav.cardsback.entity.WordState;
 import org.sav.cardsback.repository.WordRepository;
-import org.sav.fornas.dto.cards.StateLimitDto;
-import org.sav.fornas.dto.cards.TrainedWordDto;
-import org.sav.fornas.dto.cards.WordLangDto;
-import org.sav.fornas.dto.cards.WordStateDto;
+import org.sav.fornas.dto.cards.*;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 import java.util.List;
-import java.util.Objects;
 import java.util.Random;
 
 @Service
@@ -51,11 +48,17 @@ public class WordService {
 	}
 
 	public Word findWordToTrain(Long userId) {
-		List<Word> words = wordRepository.findWordToTrain(userId);
-		if (words.isEmpty()) {
-			return null;
-		}
-		return words.get(random.nextInt(words.size()));
+		return wordRepository.findWordToTrain(userId, PageRequest.of(0, 1)).stream().findFirst().orElse(null);
+	}
+
+	public StatisticDto getStatistics(Long userId) {
+		StatisticDto stat = new StatisticDto();
+		stat.setStatisticsAttemptDto(wordRepository.getStatisticAttempt(userId));
+		stat.setStatisticsComonDto(wordRepository.getStatisticCommon(userId));
+		stat.setTotalCommonCount(stat.getStatisticsComonDto().stream().mapToLong(StatisticComonDto::getCount).sum());
+		stat.setTotalAttemptCount(stat.getStatisticsAttemptDto().stream().mapToLong(StatisticAttemptDto::getCount).sum());
+		stat.setTotalAttemptSum(stat.getStatisticsAttemptDto().stream().mapToLong(s -> s.getUkrainianCnt() + s.getEnglishCnt()).sum());
+		return stat;
 	}
 
 	@Transactional

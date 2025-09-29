@@ -9,10 +9,8 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import org.sav.cardsback.entity.Word;
 import org.sav.cardsback.entity.WordState;
 import org.sav.cardsback.repository.WordRepository;
-import org.sav.fornas.dto.cards.StateLimitDto;
-import org.sav.fornas.dto.cards.TrainedWordDto;
-import org.sav.fornas.dto.cards.WordLangDto;
-import org.sav.fornas.dto.cards.WordStateDto;
+import org.sav.fornas.dto.cards.*;
+import org.springframework.data.domain.PageRequest;
 
 import java.util.Collections;
 import java.util.List;
@@ -117,22 +115,22 @@ class WordServiceTest {
     @Test
     void findWordToTrain_ReturnsRandomWord() {
         List<Word> words = Collections.singletonList(testWord);
-        when(wordRepository.findWordToTrain(userId)).thenReturn(words);
+        when(wordRepository.findWordToTrain(userId, PageRequest.of(0, 1))).thenReturn(words);
 
         Word result = wordService.findWordToTrain(userId);
 
         assertEquals(testWord, result);
-        verify(wordRepository).findWordToTrain(userId);
+        verify(wordRepository).findWordToTrain(userId, PageRequest.of(0, 1));
     }
 
     @Test
     void findWordToTrain_EmptyList_ReturnsNull() {
-        when(wordRepository.findWordToTrain(userId)).thenReturn(Collections.emptyList());
+        when(wordRepository.findWordToTrain(userId, PageRequest.of(0, 1))).thenReturn(Collections.emptyList());
 
         Word result = wordService.findWordToTrain(userId);
 
         assertNull(result);
-        verify(wordRepository).findWordToTrain(userId);
+        verify(wordRepository).findWordToTrain(userId, PageRequest.of(0, 1));
     }
 
     @Test
@@ -252,5 +250,23 @@ class WordServiceTest {
         assertEquals(0, testWord.getUkrainianCnt());
         assertNotNull(testWord.getNextTrain());
         verify(wordRepository).save(testWord);
+    }
+
+    @Test
+    void getStatistics() {
+        List<StatisticAttemptDto> attemptDtos = List.of();
+        List<StatisticComonDto> commonDtos = List.of();
+        
+        when(wordRepository.getStatisticAttempt(userId)).thenReturn(attemptDtos);
+        when(wordRepository.getStatisticCommon(userId)).thenReturn(commonDtos);
+
+        StatisticDto result = wordService.getStatistics(userId);
+
+        assertNotNull(result);
+        assertEquals(attemptDtos, result.getStatisticsAttemptDto());
+        assertEquals(commonDtos, result.getStatisticsComonDto());
+        
+        verify(wordRepository).getStatisticAttempt(userId);
+        verify(wordRepository).getStatisticCommon(userId);
     }
 }

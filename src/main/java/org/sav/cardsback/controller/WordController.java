@@ -5,6 +5,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.sav.cardsback.entity.Word;
 import org.sav.cardsback.mapper.WordMapper;
 import org.sav.cardsback.service.WordService;
+import org.sav.fornas.dto.cards.StatisticDto;
 import org.sav.fornas.dto.cards.TrainedWordDto;
 import org.sav.fornas.dto.cards.WordDto;
 import org.sav.fornas.dto.cards.WordLangDto;
@@ -82,6 +83,12 @@ public class WordController {
 		}
 		log.debug(">>>>>> found word {}", wordDto);
 		return ResponseEntity.ok(wordDto);
+	}
+
+	@GetMapping("/statistic")
+	public ResponseEntity<StatisticDto> getStatistic(@AuthenticationPrincipal Jwt jwt){
+		log.debug(">>>>>> getStatistic for user {}", jwt.getClaim(CLAIM_USER_ID).toString());
+		return ResponseEntity.ok(wordService.getStatistics(jwt.getClaim(CLAIM_USER_ID)));
 	}
 
 	@PostMapping("/trained")
