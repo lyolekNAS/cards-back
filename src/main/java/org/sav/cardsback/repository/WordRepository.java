@@ -31,9 +31,8 @@ public interface WordRepository extends JpaRepository<Word, Long> {
 	@Query("""
         Select new org.sav.fornas.dto.cards.StatisticAttemptDto(ws.id, count(w.id), coalesce(sum(sl.attempt - w.englishCnt), 0), coalesce(sum(sl.attempt - w.ukrainianCnt), 0))
             From WordState ws
-            Left Join Word w On w.state.id = ws.id And w.userId = :userId
+            Left Join Word w On w.state.id = ws.id And w.userId = :userId And (w.nextTrain IS NULL OR w.nextTrain <= CURRENT_TIMESTAMP)
             Left Join StateLimit sl on sl.stateId = w.state.id
-            Where (w.nextTrain IS NULL OR w.nextTrain <= CURRENT_TIMESTAMP)
             Group By ws.id
         """)
 	List<StatisticAttemptDto> getStatisticAttempt(@Param("userId") Long userId);
