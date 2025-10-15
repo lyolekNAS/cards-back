@@ -20,7 +20,7 @@ public class SecurityConfig {
 				.csrf(AbstractHttpConfigurer::disable)
 				.authorizeHttpRequests(auth -> auth
 						.requestMatchers("/public/**").permitAll()
-						.anyRequest().authenticated()
+						.anyRequest().hasRole("CARDS_USER")
 				)
 				.oauth2ResourceServer(oauth2 -> oauth2
 						.jwt(jwt -> jwt
