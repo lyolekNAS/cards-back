@@ -28,12 +28,7 @@ jobs:
       -   name: Run tests
           run: ./mvnw clean verify -s .mvn/settings.xml
           env:
-            CONFIG_SERVER_PASS: ${{ secrets.CONFIG_SERVER_PASS }}
-            CONFIG_SERVER_URL: ${{ secrets.CONFIG_SERVER_URL }}
-            CONFIG_SERVER_USER: ${{ secrets.CONFIG_SERVER_USER }}
             SPRING_PROFILES_ACTIVE: test
-            USER_SERVICE_VAULT_ROLE_ID: ${{ secrets.CARDS_BACK_VAULT_ROLE_ID }}
-            USER_SERVICE_VAULT_SECRET_ID: ${{ secrets.CARDS_BACK_VAULT_SECRET_ID }}
             GITHUB_TOKEN: ${{ secrets.MY_GITHUB_TOKEN }}
 
 

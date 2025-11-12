@@ -1,7 +1,7 @@
 #debug: true
 logging:
     level:
-        org.sav: DEBUG
+        org.sav: INFO
 #        org.springframework.security.oauth2=: DEBUG
 #        org.springframework.security: DEBUG
 #        org.hibernate.SQL: debug
@@ -19,8 +19,12 @@ spring:
     jpa:
         hibernate.ddl-auto: create-drop
         show-sql: true
-
-
+    config:
+        import:
+            - optional:configserver:${config.server.url}
+    cloud:
+        vault:
+            enabled: false
 server:
     error:
         whitelabel:
@@ -28,13 +32,6 @@ server:
 
     port: 8052
     forward-headers-strategy: framework
-#    servlet:
-#        session:
-#            cookie:
-#                name: JSESSION_${spring.application.name}
-#                same-site: none
-#                secure: true
-#        context-path: /${spring.application.name}
 
 springdoc:
     swagger-ui:
