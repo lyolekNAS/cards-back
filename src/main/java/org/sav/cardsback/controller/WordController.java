@@ -2,13 +2,13 @@ package org.sav.cardsback.controller;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.sav.cardsback.dto.StatisticDto;
+import org.sav.cardsback.dto.TrainedWordDto;
+import org.sav.cardsback.dto.WordDto;
+import org.sav.cardsback.dto.WordLangDto;
 import org.sav.cardsback.entity.Word;
 import org.sav.cardsback.mapper.WordMapper;
 import org.sav.cardsback.service.WordService;
-import org.sav.fornas.dto.cards.StatisticDto;
-import org.sav.fornas.dto.cards.TrainedWordDto;
-import org.sav.fornas.dto.cards.WordDto;
-import org.sav.fornas.dto.cards.WordLangDto;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.oauth2.jwt.Jwt;
@@ -39,6 +39,7 @@ public class WordController {
 		return ResponseEntity.ok(wordMapper.toDtoList(words));
 	}
 
+	//ToDo: додати перевірку на власність слова
 	@PostMapping("/save")
 	public ResponseEntity<WordDto> addWord(@AuthenticationPrincipal Jwt jwt, @RequestBody WordDto wordDto) {
 		log.debug(">>>>>> addWord({})", wordDto);

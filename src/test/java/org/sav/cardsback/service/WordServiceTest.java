@@ -6,10 +6,10 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.sav.cardsback.dto.*;
 import org.sav.cardsback.entity.Word;
 import org.sav.cardsback.entity.WordState;
 import org.sav.cardsback.repository.WordRepository;
-import org.sav.fornas.dto.cards.*;
 import org.springframework.data.domain.PageRequest;
 
 import java.util.Collections;
@@ -48,7 +48,7 @@ class WordServiceTest {
 
 
         stateLimit = new StateLimitDto();
-        stateLimit.setStateId(WordStateDto.STAGE_1.getId());
+        stateLimit.setState(WordStateDto.STAGE_1);
         stateLimit.setAttempt(10);   // ліміт збігся з testWord
         stateLimit.setDelay(0);      // щоб спрацював DONE
     }

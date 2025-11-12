@@ -1,10 +1,10 @@
 package org.sav.cardsback.mapper;
 
 import org.junit.jupiter.api.Test;
+import org.sav.cardsback.dto.WordDto;
+import org.sav.cardsback.dto.WordStateDto;
 import org.sav.cardsback.entity.Word;
 import org.sav.cardsback.entity.WordState;
-import org.sav.fornas.dto.cards.WordDto;
-import org.sav.fornas.dto.cards.WordStateDto;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 

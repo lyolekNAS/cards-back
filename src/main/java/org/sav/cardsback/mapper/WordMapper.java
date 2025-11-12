@@ -1,8 +1,8 @@
 package org.sav.cardsback.mapper;
 
 import org.mapstruct.Mapper;
+import org.sav.cardsback.dto.WordDto;
 import org.sav.cardsback.entity.Word;
-import org.sav.fornas.dto.cards.WordDto;
 
 import java.util.List;
 

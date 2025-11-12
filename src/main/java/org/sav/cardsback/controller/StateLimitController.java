@@ -1,8 +1,8 @@
 package org.sav.cardsback.controller;
 
-import org.sav.cardsback.entity.StateLimit;
+import org.sav.cardsback.dto.StateLimitDto;
+import org.sav.cardsback.dto.WordStateDto;
 import org.sav.cardsback.service.StateLimitService;
-import org.sav.fornas.dto.cards.StateLimitDto;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -26,8 +26,8 @@ public class StateLimitController {
 		return ResponseEntity.ok(stateLimitService.findAll());
 	}
 
-	@GetMapping("/id/{id}")
-	public ResponseEntity<StateLimitDto> getById(@PathVariable Integer id) {
-		return ResponseEntity.ok(stateLimitService.findById(id));
+	@GetMapping("/id/{state}")
+	public ResponseEntity<StateLimitDto> getById(@PathVariable WordStateDto state) {
+		return ResponseEntity.ok(stateLimitService.findById(state.getId()));
 	}
 }

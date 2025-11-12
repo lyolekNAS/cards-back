@@ -4,18 +4,21 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
+import org.sav.cardsback.dto.StatisticDto;
+import org.sav.cardsback.dto.TrainedWordDto;
+import org.sav.cardsback.dto.WordDto;
+import org.sav.cardsback.dto.WordLangDto;
 import org.sav.cardsback.entity.Word;
 import org.sav.cardsback.entity.WordState;
 import org.sav.cardsback.mapper.WordMapper;
 import org.sav.cardsback.service.WordService;
-import org.sav.fornas.dto.cards.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 
-import java.time.LocalDateTime;
+import java.time.OffsetDateTime;
 import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -54,7 +57,7 @@ class WordControllerTest {
 		word.setUkrainian("привіт");
 		word.setEnglishCnt(5);
 		word.setUkrainianCnt(3);
-		word.setLastTrain(LocalDateTime.now());
+		word.setLastTrain(OffsetDateTime.now());
 		word.setState(new WordState());
 
 		wordDto = new WordDto();

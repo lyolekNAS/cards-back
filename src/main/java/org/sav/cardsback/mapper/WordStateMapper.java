@@ -1,8 +1,8 @@
 package org.sav.cardsback.mapper;
 
 import org.mapstruct.Mapper;
+import org.sav.cardsback.dto.WordStateDto;
 import org.sav.cardsback.entity.WordState;
-import org.sav.fornas.dto.cards.WordStateDto;
 
 @Mapper(componentModel = "spring")
 public interface WordStateMapper {

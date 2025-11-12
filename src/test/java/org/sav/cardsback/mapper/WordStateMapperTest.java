@@ -2,8 +2,8 @@
 package org.sav.cardsback.mapper;
 
 import org.junit.jupiter.api.Test;
+import org.sav.cardsback.dto.WordStateDto;
 import org.sav.cardsback.entity.WordState;
-import org.sav.fornas.dto.cards.WordStateDto;
 
 import static org.junit.jupiter.api.Assertions.*;
 

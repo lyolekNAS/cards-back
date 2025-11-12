@@ -2,15 +2,15 @@ package org.sav.cardsback.service;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.sav.cardsback.dto.*;
 import org.sav.cardsback.entity.Word;
 import org.sav.cardsback.entity.WordState;
 import org.sav.cardsback.repository.WordRepository;
-import org.sav.fornas.dto.cards.*;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.time.LocalDateTime;
+import java.time.OffsetDateTime;
 import java.util.List;
 import java.util.Random;
 
@@ -74,7 +74,7 @@ public class WordService {
 			handleFailure(word);
 		}
 
-		word.setLastTrain(LocalDateTime.now());
+		word.setLastTrain(OffsetDateTime.now());
 		wordRepository.save(word);
 		return true;
 	}
@@ -112,7 +112,7 @@ public class WordService {
 				: WordStateDto.DONE.getId();
 
 		word.setState(new WordState(nextStateId));
-		word.setNextTrain(LocalDateTime.now().plusDays(stateLimit.getDelay()));
+		word.setNextTrain(OffsetDateTime.now().plusDays(stateLimit.getDelay()));
 		word.setEnglishCnt(0);
 		word.setUkrainianCnt(0);
 	}

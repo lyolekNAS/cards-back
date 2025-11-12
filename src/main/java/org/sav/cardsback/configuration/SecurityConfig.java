@@ -19,7 +19,7 @@ public class SecurityConfig {
 		return http
 				.csrf(AbstractHttpConfigurer::disable)
 				.authorizeHttpRequests(auth -> auth
-						.requestMatchers("/public/**").permitAll()
+						.requestMatchers("/v3/api-docs/**", "/swagger-ui.html", "/swagger-ui/**").permitAll()
 						.anyRequest().hasRole("CARDS_USER")
 				)
 				.oauth2ResourceServer(oauth2 -> oauth2

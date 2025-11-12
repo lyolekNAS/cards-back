@@ -2,17 +2,17 @@ package org.sav.cardsback.repository;
 
 import lombok.extern.slf4j.Slf4j;
 import org.junit.jupiter.api.Test;
+import org.sav.cardsback.dto.StatisticAttemptDto;
+import org.sav.cardsback.dto.StatisticComonDto;
 import org.sav.cardsback.entity.StateLimit;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
 import org.springframework.boot.test.autoconfigure.orm.jpa.TestEntityManager;
 import org.sav.cardsback.entity.Word;
 import org.sav.cardsback.entity.WordState;
-import org.sav.fornas.dto.cards.StatisticAttemptDto;
-import org.sav.fornas.dto.cards.StatisticComonDto;
 import org.springframework.data.domain.PageRequest;
 
-import java.time.LocalDateTime;
+import java.time.OffsetDateTime;
 import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -109,7 +109,7 @@ class WordRepositoryTest {
         word.setEnglishCnt(0);
         entityManager.persistAndFlush(word);
 
-        wordRepository.updateEnglishCnt(word.getId(), 5);
+        wordRepository.updateEnglishCnt(word.getId(), 5, OffsetDateTime.now());
         entityManager.clear();
 
         Word updated = entityManager.find(Word.class, word.getId());
@@ -124,7 +124,7 @@ class WordRepositoryTest {
         word.setUkrainianCnt(0);
         entityManager.persistAndFlush(word);
 
-        wordRepository.updateUkrainianCnt(word.getId(), 3);
+        wordRepository.updateUkrainianCnt(word.getId(), 3, OffsetDateTime.now());
         entityManager.clear();
 
         Word updated = entityManager.find(Word.class, word.getId());
@@ -165,8 +165,8 @@ class WordRepositoryTest {
         word.setState(state);
         word.setEnglishCnt(englishCnt);
         word.setUkrainianCnt(ukrainianCnt);
-        word.setLastTrain(LocalDateTime.now());
-        word.setNextTrain(LocalDateTime.now().plusDays(nextTrain));
+        word.setLastTrain(OffsetDateTime.now());
+        word.setNextTrain(OffsetDateTime.now().plusDays(nextTrain));
         return entityManager.persistAndFlush(word);
     }
     private Word createAndPersistWord(String english, String ukrainian, Long userId, WordState state) {

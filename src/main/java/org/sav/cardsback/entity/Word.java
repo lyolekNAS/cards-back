@@ -6,7 +6,7 @@ import lombok.Getter;
 import lombok.Setter;
 import lombok.ToString;
 
-import java.time.LocalDateTime;
+import java.time.OffsetDateTime;
 
 @Entity
 @Setter
@@ -35,10 +35,10 @@ public class Word {
 	Integer ukrainianCnt;
 
 	@Column
-	LocalDateTime lastTrain;
+	OffsetDateTime lastTrain;
 
 	@Column
-	LocalDateTime nextTrain;
+	OffsetDateTime nextTrain;
 
 	@ManyToOne
 	@JoinColumn(name = "state_id")

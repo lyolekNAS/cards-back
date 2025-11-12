@@ -1,14 +1,15 @@
 package org.sav.cardsback.repository;
 
+import org.sav.cardsback.dto.StatisticAttemptDto;
+import org.sav.cardsback.dto.StatisticComonDto;
 import org.sav.cardsback.entity.Word;
-import org.sav.fornas.dto.cards.StatisticAttemptDto;
-import org.sav.fornas.dto.cards.StatisticComonDto;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
+import java.time.OffsetDateTime;
 import java.util.List;
 
 public interface WordRepository extends JpaRepository<Word, Long> {
@@ -29,7 +30,7 @@ public interface WordRepository extends JpaRepository<Word, Long> {
 	List<Word> findWordToTrain(@Param("userId") Long userId, Pageable pageable);
 
 	@Query("""
-        Select new org.sav.fornas.dto.cards.StatisticAttemptDto(ws.id, count(w.id), coalesce(sum(sl.attempt - w.englishCnt), 0), coalesce(sum(sl.attempt - w.ukrainianCnt), 0))
+        Select new org.sav.cardsback.dto.StatisticAttemptDto(ws.id, count(w.id), coalesce(sum(sl.attempt - w.englishCnt), 0), coalesce(sum(sl.attempt - w.ukrainianCnt), 0))
             From WordState ws
             Left Join Word w On w.state.id = ws.id And w.userId = :userId And (w.nextTrain IS NULL OR w.nextTrain <= CURRENT_TIMESTAMP)
             Left Join StateLimit sl on sl.stateId = w.state.id
@@ -38,7 +39,7 @@ public interface WordRepository extends JpaRepository<Word, Long> {
 	List<StatisticAttemptDto> getStatisticAttempt(@Param("userId") Long userId);
 
 	@Query("""
-        Select new org.sav.fornas.dto.cards.StatisticComonDto(ws.id, count(w.id))
+        Select new org.sav.cardsback.dto.StatisticComonDto(ws.id, count(w.id))
             From WordState ws
             Left Join Word w On w.state.id = ws.id And w.userId = :userId
             Group By ws.id
@@ -46,12 +47,12 @@ public interface WordRepository extends JpaRepository<Word, Long> {
 	List<StatisticComonDto> getStatisticCommon(@Param("userId") Long userId);
 
 	@Modifying
-	@Query("UPDATE Word w SET w.englishCnt = :count, w.lastTrain = CURRENT_TIMESTAMP WHERE w.id = :id")
-	void updateEnglishCnt(@Param("id") Long id, @Param("count") Integer count);
+	@Query("UPDATE Word w SET w.englishCnt = :count, w.lastTrain = :now WHERE w.id = :id")
+	void updateEnglishCnt(@Param("id") Long id, @Param("count") Integer count, @Param("now") OffsetDateTime now);
 
 	@Modifying
-	@Query("UPDATE Word w SET w.ukrainianCnt = :count, w.lastTrain = CURRENT_TIMESTAMP WHERE w.id = :id")
-	void updateUkrainianCnt(@Param("id") Long id, @Param("count") Integer count);
+	@Query("UPDATE Word w SET w.ukrainianCnt = :count, w.lastTrain = :now WHERE w.id = :id")
+	void updateUkrainianCnt(@Param("id") Long id, @Param("count") Integer count, @Param("now")	OffsetDateTime now);
 
 	@Modifying
 	@Query("UPDATE Word w SET w.state.id = :stateId WHERE w.id = :id")
