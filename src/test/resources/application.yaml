@@ -38,3 +38,19 @@ springdoc:
         enabled: false
     api-docs:
         enabled: false
+
+app-props:
+    email: none
+    url:
+        my-memory: none
+        datamuse: none
+        azure: none
+        merriam-webster: none
+    google:
+        api-key: none
+        translate-url: none
+
+trans-azure-key: key
+mymemory_email: key
+merriam_webster_key: key
+wordnik_api_key: key
