@@ -19,6 +19,7 @@ public class TranslationService {
 
 	public List<DictTrans> getTranslations(DictWord word){
 		return getAllTranslations(word.getWordText()).stream()
+				.map(String::toLowerCase)
 				.distinct()
 				.map(s -> {
 					DictTrans dt = new DictTrans();
