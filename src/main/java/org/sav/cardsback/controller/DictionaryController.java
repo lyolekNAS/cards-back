@@ -23,7 +23,7 @@ public class DictionaryController {
 	private final WordProcessingService wordProcessingService;
 
 	@GetMapping("/getNewWords")
-	public ResponseEntity<List<DictWord>> getNewWord(@AuthenticationPrincipal Jwt jwt){
+	public ResponseEntity<List<DictWord>> getNewWords(@AuthenticationPrincipal Jwt jwt){
 		List<DictWord> words = wordnikRandomWordImporter.importRandomWords(jwt.getClaim("userId"));
 		return ResponseEntity.ok(words);
 	}
