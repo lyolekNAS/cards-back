@@ -10,7 +10,6 @@ import org.sav.cardsback.entity.DictWord;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;
-import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.client.RestTemplate;
 
 import java.util.ArrayList;
@@ -42,8 +41,7 @@ public class WordnikRandomWordImporter {
 					"&api_key=%s" +
 					"&includePartOfSpeech=%s";
 
-	@Transactional
-	public List<DictWord> importRandomWords() {
+	public List<DictWord> importRandomWords(Long userId) {
 		String url = String.format(API_URL, apiKey, PartOfSpeech.getAllDisplayNamesLowercase());
 		try {
 			ResponseEntity<String> response = restTemplate.getForEntity(url, String.class);
@@ -68,7 +66,7 @@ public class WordnikRandomWordImporter {
 				}
 			}
 
-			return result;
+			return result.stream().filter(w -> wordProcessingService.isWordSuitable(userId, w)).toList();
 		} catch (Exception e) {
 			log.error("Error calling API: {}", e.getMessage(), e);
 			return List.of();

@@ -14,6 +14,7 @@ import org.springframework.data.domain.PageRequest;
 
 import java.time.OffsetDateTime;
 import java.util.List;
+import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.*;
@@ -47,18 +48,18 @@ class WordRepositoryTest {
         WordState state = createAndPersistWordState(1);
         createAndPersistWord("test", "тест", 1L, state);
 
-        Word result = wordRepository.findByUserIdAndEnglish(1L, "test");
+        Optional<Word> result = wordRepository.findByUserIdAndEnglish(1L, "test");
 
-        assertNotNull(result);
-        assertEquals("test", result.getEnglish());
-        assertEquals(1L, result.getUserId());
+        assertTrue(result.isPresent());
+        assertEquals("test", result.get().getEnglish());
+        assertEquals(1L, result.get().getUserId());
     }
 
     @Test
     void findByUserIdAndEnglish_shouldReturnNull_whenNotExists() {
-        Word result = wordRepository.findByUserIdAndEnglish(1L, "nonexistent");
+        Optional<Word> result = wordRepository.findByUserIdAndEnglish(1L, "nonexistent");
 
-        assertNull(result);
+        assertTrue(result.isEmpty());
     }
 
     @Test

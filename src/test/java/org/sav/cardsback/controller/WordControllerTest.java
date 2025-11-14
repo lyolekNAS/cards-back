@@ -114,8 +114,7 @@ class WordControllerTest {
 
 	@Test
 	void findWord() throws Exception {
-		when(wordService.findByUserIdAndEnglish(userId, "hello")).thenReturn(word);
-		when(wordMapper.toDto(word)).thenReturn(wordDto);
+		when(wordService.findByUserIdAndEnglish(userId, "hello")).thenReturn(wordDto);
 
 		mockMvc.perform(get("/api/word/find")
 						.param("w", "hello")
@@ -124,7 +123,6 @@ class WordControllerTest {
 				.andExpect(jsonPath("$.english").value("hello"));
 
 		verify(wordService).findByUserIdAndEnglish(userId, "hello");
-		verify(wordMapper).toDto(word);
 	}
 
 	@Test

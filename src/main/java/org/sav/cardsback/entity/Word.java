@@ -1,6 +1,7 @@
 package org.sav.cardsback.entity;
 
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
@@ -22,7 +23,7 @@ public class Word {
 
 	String ukrainian;
 
-	@Column
+	@Column(length = 3000)
 	String description;
 
 	@Column
@@ -43,4 +44,7 @@ public class Word {
 	@ManyToOne
 	@JoinColumn(name = "state_id")
 	WordState state;
+
+	@ManyToOne
+	private DictWord dictWord;
 }

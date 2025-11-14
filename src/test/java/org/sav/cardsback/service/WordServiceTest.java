@@ -9,11 +9,14 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import org.sav.cardsback.dto.*;
 import org.sav.cardsback.entity.Word;
 import org.sav.cardsback.entity.WordState;
+import org.sav.cardsback.mapper.WordMapper;
 import org.sav.cardsback.repository.WordRepository;
+import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.data.domain.PageRequest;
 
 import java.util.Collections;
 import java.util.List;
+import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
@@ -28,10 +31,14 @@ class WordServiceTest {
     @Mock
     private StateLimitService stateLimitService;
 
+    @Mock
+    private WordMapper wordMapper;
+
     @InjectMocks
     private WordService wordService;
 
     private Word testWord;
+    private WordDto testWordDto;
     private StateLimitDto stateLimit;
     private final Long userId = 1L;
 
@@ -46,6 +53,15 @@ class WordServiceTest {
         testWord.setUkrainianCnt(3);
         testWord.setState(new WordState(WordStateDto.STAGE_1.getId()));
 
+        testWordDto = WordDto.builder()
+                .id(1L)
+                .userId(userId)
+                .english("test")
+                .ukrainian("тест")
+                .englishCnt(5)
+                .ukrainianCnt(5)
+                .state(WordStateDto.STAGE_1)
+                .build();
 
         stateLimit = new StateLimitDto();
         stateLimit.setState(WordStateDto.STAGE_1);
@@ -76,11 +92,12 @@ class WordServiceTest {
 
     @Test
     void findByUserIdAndEnglish_ReturnsWord() {
-        when(wordRepository.findByUserIdAndEnglish(userId, "test")).thenReturn(testWord);
+        when(wordRepository.findByUserIdAndEnglish(userId, "test")).thenReturn(Optional.of(testWord));
+        when(wordMapper.toDto(testWord)).thenReturn(testWordDto);
 
-        Word result = wordService.findByUserIdAndEnglish(userId, "test");
+        WordDto result = wordService.findByUserIdAndEnglish(userId, "test");
 
-        assertEquals(testWord, result);
+        assertEquals(testWordDto, result);
         verify(wordRepository).findByUserIdAndEnglish(userId, "test");
     }
 

@@ -9,13 +9,15 @@ import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
+import javax.swing.text.html.Option;
 import java.time.OffsetDateTime;
 import java.util.List;
+import java.util.Optional;
 
 public interface WordRepository extends JpaRepository<Word, Long> {
 
 	List<Word> findAllByUserId(Long userId);
-	Word findByUserIdAndEnglish(Long userId, String w);
+	Optional<Word> findByUserIdAndEnglish(Long userId, String w);
 	Word findByIdAndUserId(Long id, Long userId);
 
 

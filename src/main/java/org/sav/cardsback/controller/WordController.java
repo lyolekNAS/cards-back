@@ -54,9 +54,7 @@ public class WordController {
 	@GetMapping("/find")
 	public ResponseEntity<WordDto> findWord(@AuthenticationPrincipal Jwt jwt, @RequestParam("w") String w){
 		log.debug(">>>>>> findWord {} for user {}", w, jwt.getClaim(CLAIM_USER_ID).toString());
-		Word word = wordService.findByUserIdAndEnglish(jwt.getClaim(CLAIM_USER_ID), w);
-		WordDto wordDto = wordMapper.toDto(word);
-		log.debug(">>>>>> word={}", word);
+		WordDto wordDto = wordService.findByUserIdAndEnglish(jwt.getClaim(CLAIM_USER_ID), w);
 		log.debug(">>>>>> wordDto={}", wordDto);
 		return ResponseEntity.ok(wordDto);
 	}

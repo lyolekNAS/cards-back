@@ -2,9 +2,13 @@ package org.sav.cardsback.service;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.sav.cardsback.domain.dictionary.service.WordProcessingService;
 import org.sav.cardsback.dto.*;
+import org.sav.cardsback.entity.DictTrans;
+import org.sav.cardsback.entity.DictWord;
 import org.sav.cardsback.entity.Word;
 import org.sav.cardsback.entity.WordState;
+import org.sav.cardsback.mapper.WordMapper;
 import org.sav.cardsback.repository.WordRepository;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
@@ -12,7 +16,9 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.time.OffsetDateTime;
 import java.util.List;
+import java.util.Optional;
 import java.util.Random;
+import java.util.stream.Collectors;
 
 @Service
 @Slf4j
@@ -20,6 +26,8 @@ import java.util.Random;
 public class WordService {
 	private final WordRepository wordRepository;
 	private final StateLimitService stateLimitService;
+	private final WordProcessingService wordProcessingService;
+	private final WordMapper wordMapper;
 
 	private final Random random = new Random();
 
@@ -31,8 +39,15 @@ public class WordService {
 		return wordRepository.save(word);
 	}
 
-	public Word findByUserIdAndEnglish(Long userId, String english) {
-		return wordRepository.findByUserIdAndEnglish(userId, english);
+	public WordDto findByUserIdAndEnglish(Long userId, String english) {
+		WordDto wordDto;
+		Optional<Word> word = wordRepository.findByUserIdAndEnglish(userId, english);
+		if(word.isPresent()) {
+			wordDto = wordMapper.toDto(word.get());
+		} else {
+			wordDto = getWordFromDict(english);
+		}
+		return wordDto;
 	}
 
 	public Word findByIdAndUserId(Long id, Long userId) {
@@ -115,5 +130,21 @@ public class WordService {
 		word.setNextTrain(OffsetDateTime.now().plusDays(stateLimit.getDelay()));
 		word.setEnglishCnt(0);
 		word.setUkrainianCnt(0);
+	}
+
+	private WordDto getWordFromDict(String word){
+		DictWord dw = wordProcessingService.processWord(word);
+		return dw == null ? null : WordDto.builder()
+				.english(dw.getWordText())
+				.description(
+						dw.getDefinitions().stream()
+								.map(dwd -> dwd.getPartOfSpeach() + ": " + dwd.getDefinitionText())
+								.collect(Collectors.joining("\n")))
+				.ukrainian(
+						dw.getTranslations().stream()
+								.map(DictTrans::getWordText)
+								.collect(Collectors.joining(", "))
+				)
+				.build();
 	}
 }

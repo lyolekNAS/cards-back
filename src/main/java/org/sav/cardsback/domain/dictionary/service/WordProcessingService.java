@@ -11,7 +11,9 @@ import org.sav.cardsback.domain.dictionary.model.PartOfSpeech;
 import org.sav.cardsback.domain.dictionary.model.WordStates;
 import org.sav.cardsback.domain.dictionary.model.mw.MWEntry;
 import org.sav.cardsback.domain.dictionary.repository.DictionaryRepository;
+import org.sav.cardsback.dto.WordDto;
 import org.sav.cardsback.entity.DictWord;
+import org.sav.cardsback.entity.Word;
 import org.sav.cardsback.infrastructure.merriamwebster.MWClient;
 import org.sav.cardsback.infrastructure.merriamwebster.SynonymExtractor;
 import org.springframework.stereotype.Service;
@@ -34,7 +36,7 @@ public class WordProcessingService {
 	private final LemmaResolverService lemmaResolverService;
 
 	@Transactional
-	public DictWord processWord(String word) throws JsonProcessingException {
+	public DictWord processWord(String word) {
 
 		DictWord dictWord = getDictWord(word);
 		if (dictWord.hasState(WordStates.MERR_WEBSTER)) {
@@ -98,6 +100,10 @@ public class WordProcessingService {
 		log.info("Processed '{}': forms={}, syns={}, defs={}",
 				word, dictWord.getForms().size(), syns.size(), dictWord.getDefinitions().size());
 		return dictWord;
+	}
+
+	public boolean isWordSuitable(Long userId, DictWord word){
+		return !dictionaryRepository.existsByUserAndDictWord(userId, word.getId());
 	}
 
 	private DictWord getDictWord(String word) {
