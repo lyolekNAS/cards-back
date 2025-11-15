@@ -4,7 +4,6 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.sav.cardsback.domain.dictionary.service.WordProcessingService;
 import org.sav.cardsback.dto.*;
-import org.sav.cardsback.entity.DictTrans;
 import org.sav.cardsback.entity.DictWord;
 import org.sav.cardsback.entity.Word;
 import org.sav.cardsback.entity.WordState;
@@ -18,7 +17,6 @@ import java.time.OffsetDateTime;
 import java.util.List;
 import java.util.Optional;
 import java.util.Random;
-import java.util.stream.Collectors;
 
 @Service
 @Slf4j
@@ -134,17 +132,6 @@ public class WordService {
 
 	private WordDto getWordFromDict(String word){
 		DictWord dw = wordProcessingService.processWord(word);
-		return dw == null ? null : WordDto.builder()
-				.english(dw.getWordText())
-				.description(
-						dw.getDefinitions().stream()
-								.map(dwd -> dwd.getPartOfSpeach() + ": " + dwd.getDefinitionText())
-								.collect(Collectors.joining("\n")))
-				.ukrainian(
-						dw.getTranslations().stream()
-								.map(DictTrans::getWordText)
-								.collect(Collectors.joining(", "))
-				)
-				.build();
+		return wordProcessingService.dtoFromDict(dw);
 	}
 }

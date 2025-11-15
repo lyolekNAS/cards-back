@@ -4,6 +4,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.sav.cardsback.application.wordnik.WordnikRandomWordImporter;
 import org.sav.cardsback.domain.dictionary.service.WordProcessingService;
+import org.sav.cardsback.dto.WordDto;
 import org.sav.cardsback.entity.DictWord;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
@@ -23,8 +24,8 @@ public class DictionaryController {
 	private final WordProcessingService wordProcessingService;
 
 	@GetMapping("/getNewWords")
-	public ResponseEntity<List<DictWord>> getNewWords(@AuthenticationPrincipal Jwt jwt){
-		List<DictWord> words = wordnikRandomWordImporter.importRandomWords(jwt.getClaim("userId"));
+	public ResponseEntity<List<WordDto>> getNewWords(@AuthenticationPrincipal Jwt jwt){
+		List<WordDto> words = wordnikRandomWordImporter.importRandomWords(jwt.getClaim("userId"));
 		return ResponseEntity.ok(words);
 	}
 

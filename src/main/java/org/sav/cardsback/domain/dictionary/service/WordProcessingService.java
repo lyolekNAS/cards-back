@@ -12,8 +12,8 @@ import org.sav.cardsback.domain.dictionary.model.WordStates;
 import org.sav.cardsback.domain.dictionary.model.mw.MWEntry;
 import org.sav.cardsback.domain.dictionary.repository.DictionaryRepository;
 import org.sav.cardsback.dto.WordDto;
+import org.sav.cardsback.entity.DictTrans;
 import org.sav.cardsback.entity.DictWord;
-import org.sav.cardsback.entity.Word;
 import org.sav.cardsback.infrastructure.merriamwebster.MWClient;
 import org.sav.cardsback.infrastructure.merriamwebster.SynonymExtractor;
 import org.springframework.stereotype.Service;
@@ -104,6 +104,23 @@ public class WordProcessingService {
 
 	public boolean isWordSuitable(Long userId, DictWord word){
 		return !dictionaryRepository.existsByUserAndDictWord(userId, word.getId());
+	}
+
+	public WordDto dtoFromDict(DictWord dw){
+		return dw == null ? null : WordDto.builder()
+				.dictWordId(dw.getId())
+				.english(dw.getWordText())
+				.description(
+						dw.getDefinitions().stream()
+								.map(dwd -> dwd.getPartOfSpeach() + ": " + dwd.getDefinitionText())
+								.collect(Collectors.joining("\n")))
+				.ukrainian(
+						dw.getTranslations().stream()
+								.map(DictTrans::getWordText)
+								.collect(Collectors.joining(", "))
+				)
+				.build();
+
 	}
 
 	private DictWord getDictWord(String word) {

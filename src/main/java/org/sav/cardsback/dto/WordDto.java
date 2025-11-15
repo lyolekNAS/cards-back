@@ -26,4 +26,5 @@ public class WordDto {
 	WordLangDto lang;
 	@Builder.Default
 	WordStateDto state = WordStateDto.STAGE_1;
+	long dictWordId;
 }

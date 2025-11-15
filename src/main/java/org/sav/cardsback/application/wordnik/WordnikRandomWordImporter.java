@@ -6,6 +6,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.sav.cardsback.domain.dictionary.model.PartOfSpeech;
 import org.sav.cardsback.domain.dictionary.service.WordProcessingService;
+import org.sav.cardsback.dto.WordDto;
 import org.sav.cardsback.entity.DictWord;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.ResponseEntity;
@@ -41,7 +42,7 @@ public class WordnikRandomWordImporter {
 					"&api_key=%s" +
 					"&includePartOfSpeech=%s";
 
-	public List<DictWord> importRandomWords(Long userId) {
+	public List<WordDto> importRandomWords(Long userId) {
 		String url = String.format(API_URL, apiKey, PartOfSpeech.getAllDisplayNamesLowercase());
 		try {
 			ResponseEntity<String> response = restTemplate.getForEntity(url, String.class);
@@ -49,7 +50,7 @@ public class WordnikRandomWordImporter {
 					response.getBody(), new TypeReference<>() {}
 			);
 
-			List<DictWord> result = new ArrayList<>();
+			List<WordDto> result = new ArrayList<>();
 
 			for (Map<String, Object> entry : data) {
 				String word = ((String) entry.get("word")).toLowerCase();
@@ -60,13 +61,13 @@ public class WordnikRandomWordImporter {
 				}
 
 				DictWord processed = wordProcessingService.processWord(word);
-				if(processed != null) {
-					result.add(processed);
+				if(processed != null && wordProcessingService.isWordSuitable(userId, processed)) {
+					result.add(wordProcessingService.dtoFromDict(processed));
 					log.debug("Processed word: {}", processed.getWordText());
 				}
 			}
 
-			return result.stream().filter(w -> wordProcessingService.isWordSuitable(userId, w)).toList();
+			return result;
 		} catch (Exception e) {
 			log.error("Error calling API: {}", e.getMessage(), e);
 			return List.of();
