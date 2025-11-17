@@ -11,9 +11,11 @@ import org.sav.cardsback.domain.dictionary.model.PartOfSpeech;
 import org.sav.cardsback.domain.dictionary.model.WordStates;
 import org.sav.cardsback.domain.dictionary.model.mw.MWEntry;
 import org.sav.cardsback.domain.dictionary.repository.DictionaryRepository;
+import org.sav.cardsback.domain.dictionary.repository.UserDictWordRepository;
 import org.sav.cardsback.dto.WordDto;
 import org.sav.cardsback.entity.DictTrans;
 import org.sav.cardsback.entity.DictWord;
+import org.sav.cardsback.entity.UserDictWord;
 import org.sav.cardsback.infrastructure.merriamwebster.MWClient;
 import org.sav.cardsback.infrastructure.merriamwebster.SynonymExtractor;
 import org.springframework.stereotype.Service;
@@ -28,6 +30,7 @@ import java.util.stream.Collectors;
 public class WordProcessingService {
 
 	private final DictionaryRepository dictionaryRepository;
+	private final UserDictWordRepository userDictWordRepository;
 	private final MWClient mwClient;
 	private final FormExtractor formExtractor;
 	private final DefinitionExtractor definitionExtractor;
@@ -121,6 +124,31 @@ public class WordProcessingService {
 				)
 				.build();
 
+	}
+
+	public void setMarkOnWord (Long wordId, String mark, Long userId){
+		UserDictWord udw = userDictWordRepository.findByUserIdAndLemma_Id(userId, wordId)
+				.orElseGet(() -> {
+					UserDictWord u = new UserDictWord();
+					u.setUserId(userId);
+					u.setLemma(new DictWord());
+					u.getLemma().setId(wordId);
+					return u;
+				});
+
+		switch (mark) {
+			case "KNOWN":
+				udw.setKnown(true);
+				udw.setUninteresting(false);
+				break;
+			case "SKIP":
+				udw.setUninteresting(true);
+				udw.setKnown(false);
+				break;
+			default:
+				throw new IllegalArgumentException("Unknown mark:" + mark);
+		}
+		userDictWordRepository.save(udw);
 	}
 
 	private DictWord getDictWord(String word) {

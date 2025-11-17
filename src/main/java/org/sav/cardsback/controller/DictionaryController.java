@@ -34,4 +34,9 @@ public class DictionaryController {
 		DictWord words = wordProcessingService.processWord(word);
 		return ResponseEntity.ok(words);
 	}
+
+	@PostMapping("/setMark")
+	public void setMarkOnWord(@RequestParam Long wordId, @RequestParam String mark, @AuthenticationPrincipal Jwt jwt){
+		wordProcessingService.setMarkOnWord(wordId, mark, jwt.getClaim("userId"));
+	}
 }
