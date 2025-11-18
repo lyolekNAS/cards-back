@@ -2,7 +2,7 @@ package org.sav.cardsback.controller;
 
 import org.sav.cardsback.dto.StateLimitDto;
 import org.sav.cardsback.dto.WordStateDto;
-import org.sav.cardsback.service.StateLimitService;
+import org.sav.cardsback.domain.dictionary.service.StateLimitService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;

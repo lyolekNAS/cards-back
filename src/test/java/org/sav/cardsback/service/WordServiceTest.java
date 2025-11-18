@@ -6,12 +6,13 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.sav.cardsback.domain.dictionary.service.StateLimitService;
+import org.sav.cardsback.domain.dictionary.service.WordService;
 import org.sav.cardsback.dto.*;
 import org.sav.cardsback.entity.Word;
 import org.sav.cardsback.entity.WordState;
 import org.sav.cardsback.mapper.WordMapper;
-import org.sav.cardsback.repository.WordRepository;
-import org.springframework.boot.test.mock.mockito.MockBean;
+import org.sav.cardsback.domain.dictionary.repository.WordRepository;
 import org.springframework.data.domain.PageRequest;
 
 import java.util.Collections;

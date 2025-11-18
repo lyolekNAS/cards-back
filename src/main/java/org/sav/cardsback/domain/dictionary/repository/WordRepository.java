@@ -1,4 +1,4 @@
-package org.sav.cardsback.repository;
+package org.sav.cardsback.domain.dictionary.repository;
 
 import org.sav.cardsback.dto.StatisticAttemptDto;
 import org.sav.cardsback.dto.StatisticComonDto;
@@ -9,7 +9,6 @@ import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
-import javax.swing.text.html.Option;
 import java.time.OffsetDateTime;
 import java.util.List;
 import java.util.Optional;

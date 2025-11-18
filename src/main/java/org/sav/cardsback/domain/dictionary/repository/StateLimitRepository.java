@@ -1,4 +1,4 @@
-package org.sav.cardsback.repository;
+package org.sav.cardsback.domain.dictionary.repository;
 
 import org.sav.cardsback.dto.StateLimitDto;
 import org.sav.cardsback.entity.StateLimit;

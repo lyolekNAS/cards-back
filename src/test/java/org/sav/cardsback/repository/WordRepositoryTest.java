@@ -2,6 +2,7 @@ package org.sav.cardsback.repository;
 
 import lombok.extern.slf4j.Slf4j;
 import org.junit.jupiter.api.Test;
+import org.sav.cardsback.domain.dictionary.repository.WordRepository;
 import org.sav.cardsback.dto.StatisticAttemptDto;
 import org.sav.cardsback.dto.StatisticComonDto;
 import org.sav.cardsback.entity.StateLimit;

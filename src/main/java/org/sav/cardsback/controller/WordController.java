@@ -8,7 +8,7 @@ import org.sav.cardsback.dto.WordDto;
 import org.sav.cardsback.dto.WordLangDto;
 import org.sav.cardsback.entity.Word;
 import org.sav.cardsback.mapper.WordMapper;
-import org.sav.cardsback.service.WordService;
+import org.sav.cardsback.domain.dictionary.service.WordService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.oauth2.jwt.Jwt;

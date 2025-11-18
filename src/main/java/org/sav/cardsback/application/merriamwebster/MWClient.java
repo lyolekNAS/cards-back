@@ -1,4 +1,4 @@
-package org.sav.cardsback.infrastructure.merriamwebster;
+package org.sav.cardsback.application.merriamwebster;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;

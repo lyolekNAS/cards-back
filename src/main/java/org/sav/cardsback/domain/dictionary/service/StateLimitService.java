@@ -1,8 +1,8 @@
-package org.sav.cardsback.service;
+package org.sav.cardsback.domain.dictionary.service;
 
 import lombok.RequiredArgsConstructor;
 import org.sav.cardsback.dto.StateLimitDto;
-import org.sav.cardsback.repository.StateLimitRepository;
+import org.sav.cardsback.domain.dictionary.repository.StateLimitRepository;
 import org.springframework.stereotype.Service;
 
 import java.util.List;

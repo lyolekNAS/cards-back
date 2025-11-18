@@ -1,6 +1,5 @@
 package org.sav.cardsback.domain.dictionary.service;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.sav.cardsback.application.dictionary.DefinitionExtractor;
@@ -16,8 +15,8 @@ import org.sav.cardsback.dto.WordDto;
 import org.sav.cardsback.entity.DictTrans;
 import org.sav.cardsback.entity.DictWord;
 import org.sav.cardsback.entity.UserDictWord;
-import org.sav.cardsback.infrastructure.merriamwebster.MWClient;
-import org.sav.cardsback.infrastructure.merriamwebster.SynonymExtractor;
+import org.sav.cardsback.application.merriamwebster.MWClient;
+import org.sav.cardsback.application.merriamwebster.SynonymExtractor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -149,6 +148,10 @@ public class WordProcessingService {
 				throw new IllegalArgumentException("Unknown mark:" + mark);
 		}
 		userDictWordRepository.save(udw);
+	}
+
+	public DictWord findUnprocessedWord(){
+		return dictionaryRepository.findWordToProcess(WordStates.MERR_WEBSTER.getId());
 	}
 
 	private DictWord getDictWord(String word) {

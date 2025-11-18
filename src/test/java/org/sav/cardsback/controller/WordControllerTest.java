@@ -11,7 +11,7 @@ import org.sav.cardsback.dto.WordLangDto;
 import org.sav.cardsback.entity.Word;
 import org.sav.cardsback.entity.WordState;
 import org.sav.cardsback.mapper.WordMapper;
-import org.sav.cardsback.service.WordService;
+import org.sav.cardsback.domain.dictionary.service.WordService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;

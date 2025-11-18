@@ -1,4 +1,4 @@
-package org.sav.cardsback.infrastructure.merriamwebster;
+package org.sav.cardsback.application.merriamwebster;
 
 import org.sav.cardsback.domain.dictionary.model.mw.MWSyn;
 

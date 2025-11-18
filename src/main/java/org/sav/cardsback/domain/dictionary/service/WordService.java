@@ -1,14 +1,13 @@
-package org.sav.cardsback.service;
+package org.sav.cardsback.domain.dictionary.service;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.sav.cardsback.domain.dictionary.service.WordProcessingService;
 import org.sav.cardsback.dto.*;
 import org.sav.cardsback.entity.DictWord;
 import org.sav.cardsback.entity.Word;
 import org.sav.cardsback.entity.WordState;
 import org.sav.cardsback.mapper.WordMapper;
-import org.sav.cardsback.repository.WordRepository;
+import org.sav.cardsback.domain.dictionary.repository.WordRepository;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
