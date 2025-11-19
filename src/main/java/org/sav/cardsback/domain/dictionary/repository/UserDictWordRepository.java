@@ -7,5 +7,7 @@ import java.util.Optional;
 
 public interface UserDictWordRepository extends JpaRepository<UserDictWord, Long> {
 	Optional<UserDictWord> findByUserIdAndLemma_Id(Long userId, Long wordId);
+	Long countByUserIdAndIsKnown(Long userId, boolean isKnown);
+	Long countByUserIdAndIsUninteresting(Long userId, boolean isUninteresting);
 }
 

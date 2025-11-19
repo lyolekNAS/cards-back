@@ -2,6 +2,7 @@ package org.sav.cardsback.domain.dictionary.service;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.sav.cardsback.domain.dictionary.repository.UserDictWordRepository;
 import org.sav.cardsback.dto.*;
 import org.sav.cardsback.entity.DictWord;
 import org.sav.cardsback.entity.Word;
@@ -23,6 +24,7 @@ import java.util.Random;
 public class WordService {
 	private final WordRepository wordRepository;
 	private final StateLimitService stateLimitService;
+	private final UserDictWordRepository userDictWordRepository;
 	private final WordProcessingService wordProcessingService;
 	private final WordMapper wordMapper;
 
@@ -70,6 +72,8 @@ public class WordService {
 		stat.setTotalCommonCount(stat.getStatisticsComonDto().stream().mapToLong(StatisticComonDto::getCount).sum());
 		stat.setTotalAttemptCount(stat.getStatisticsAttemptDto().stream().mapToLong(StatisticAttemptDto::getCount).sum());
 		stat.setTotalAttemptSum(stat.getStatisticsAttemptDto().stream().mapToLong(s -> s.getUkrainianCnt() + s.getEnglishCnt()).sum());
+		stat.setTotalKnown(userDictWordRepository.countByUserIdAndIsKnown(userId, true));
+		stat.setTotalUninteresting(userDictWordRepository.countByUserIdAndIsUninteresting(userId, true));
 		return stat;
 	}
 

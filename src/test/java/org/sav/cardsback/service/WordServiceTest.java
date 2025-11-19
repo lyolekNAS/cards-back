@@ -6,6 +6,7 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.sav.cardsback.domain.dictionary.repository.UserDictWordRepository;
 import org.sav.cardsback.domain.dictionary.service.StateLimitService;
 import org.sav.cardsback.domain.dictionary.service.WordService;
 import org.sav.cardsback.dto.*;
@@ -28,6 +29,9 @@ class WordServiceTest {
 
     @Mock
     private WordRepository wordRepository;
+
+    @Mock
+    private UserDictWordRepository userDictWordRepository;
 
     @Mock
     private StateLimitService stateLimitService;

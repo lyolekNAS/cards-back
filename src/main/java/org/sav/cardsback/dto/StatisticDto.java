@@ -17,4 +17,6 @@ public class StatisticDto {
 	long totalCommonCount;
 	long totalAttemptCount;
 	long totalAttemptSum;
+	long totalKnown;
+	long totalUninteresting;
 }
