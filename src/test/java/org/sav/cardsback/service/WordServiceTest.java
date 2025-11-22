@@ -14,10 +14,14 @@ import org.sav.cardsback.entity.Word;
 import org.sav.cardsback.entity.WordState;
 import org.sav.cardsback.mapper.WordMapper;
 import org.sav.cardsback.domain.dictionary.repository.WordRepository;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 
 import java.util.Collections;
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -75,15 +79,45 @@ class WordServiceTest {
     }
 
     @Test
-    void findAllByUserId_ReturnsWords() {
-        List<Word> words = Collections.singletonList(testWord);
-        when(wordRepository.findAllByUserId(userId)).thenReturn(words);
+    void findAllByUserId_withEmptyState_callsFindAllByUserId() {
+        Page<Word> page = new PageImpl<>(List.of(testWord));
+        when(wordRepository.findAllByUserId(eq(userId), any(Pageable.class))).thenReturn(page);
 
-        List<Word> result = wordService.findAllByUserId(userId);
+        Page<Word> result = wordService.findAllByUserId(userId, "", PageRequest.of(0, 10));
 
-        assertEquals(words, result);
-        verify(wordRepository).findAllByUserId(userId);
+        assertEquals(1, result.getTotalElements());
+        assertEquals(testWord, result.getContent().getFirst());
+        verify(wordRepository).findAllByUserId(eq(userId), any(Pageable.class));
+        verify(wordRepository, never()).findAllByUserIdAndState(any(), any(), any());
     }
+
+    @Test
+    void findAllByUserId_withNonEmptyState_callsFindAllByUserIdAndState() {
+        Page<Word> page = new PageImpl<>(List.of(testWord));
+        String stateName = "STAGE_1";
+        WordState stateDto = WordStateDto.fromName(stateName);
+
+        when(wordRepository.findAllByUserIdAndState(
+                eq(userId),
+                argThat(s -> s.getId().equals(stateDto.getId())),
+                any(Pageable.class)
+        )).thenReturn(page);
+
+        Page<Word> result =
+                wordService.findAllByUserId(userId, stateName, PageRequest.of(0, 10));
+
+        assertEquals(1, result.getTotalElements());
+        assertEquals(testWord, result.getContent().getFirst());
+
+        verify(wordRepository).findAllByUserIdAndState(
+                eq(userId),
+                argThat(s -> s.getId().equals(stateDto.getId())),
+                any(Pageable.class)
+        );
+
+        verify(wordRepository, never()).findAllByUserId(any(), any());
+    }
+
 
     @Test
     void save_ReturnsWord() {

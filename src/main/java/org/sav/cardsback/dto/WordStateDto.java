@@ -1,6 +1,7 @@
 package org.sav.cardsback.dto;
 
 import lombok.Getter;
+import org.sav.cardsback.entity.WordState;
 
 @Getter
 public enum WordStateDto {
@@ -27,5 +28,14 @@ public enum WordStateDto {
 			}
 		}
 		throw new IllegalArgumentException("No enum constant with code " + id);
+	}
+
+	public static WordState fromName(String stateName) {
+		for (WordStateDto state : WordStateDto.values()) {
+			if (state.name().equalsIgnoreCase(stateName)) {
+				return new WordState(state.getId());
+			}
+		}
+		throw new IllegalArgumentException("No enum constant with name " + stateName);
 	}
 }

@@ -2,13 +2,14 @@ package org.sav.cardsback.controller;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.sav.cardsback.dto.StatisticDto;
-import org.sav.cardsback.dto.TrainedWordDto;
-import org.sav.cardsback.dto.WordDto;
-import org.sav.cardsback.dto.WordLangDto;
+import org.sav.cardsback.dto.*;
 import org.sav.cardsback.entity.Word;
 import org.sav.cardsback.mapper.WordMapper;
 import org.sav.cardsback.domain.dictionary.service.WordService;
+import org.springframework.boot.autoconfigure.data.web.SpringDataWebProperties;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.oauth2.jwt.Jwt;
@@ -33,10 +34,27 @@ public class WordController {
 
 
 	@GetMapping(value = "/user/all")
-	public ResponseEntity<List<WordDto>> getAllByUser(@AuthenticationPrincipal Jwt jwt) {
+	public ResponseEntity<WordsPageDto<WordDto>> getAllByUser(
+			@RequestParam(defaultValue = "0") int page,
+			@RequestParam(defaultValue = "20") int size,
+			@RequestParam(defaultValue = "") String state,
+			@AuthenticationPrincipal Jwt jwt) {
+
 		log.debug(">>>>>> getAllByUser for {}", jwt.getClaim(CLAIM_USER_ID).toString());
-		List<Word> words = wordService.findAllByUserId(jwt.getClaim(CLAIM_USER_ID));
-		return ResponseEntity.ok(wordMapper.toDtoList(words));
+
+		Pageable pageable = PageRequest.of(page, size);
+		Page<Word> words = wordService.findAllByUserId(jwt.getClaim(CLAIM_USER_ID), state, pageable);
+		WordsPageDto<WordDto> dto = new WordsPageDto<>(
+				words.getContent().stream().map(wordMapper::toDto).toList(),
+				words.getNumber(),
+				words.getSize(),
+				words.getTotalElements(),
+				words.getTotalPages(),
+				words.isFirst(),
+				words.isLast()
+		);
+
+		return ResponseEntity.ok(dto);
 	}
 
 	//ToDo: додати перевірку на власність слова

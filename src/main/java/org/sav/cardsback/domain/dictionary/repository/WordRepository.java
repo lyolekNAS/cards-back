@@ -3,6 +3,8 @@ package org.sav.cardsback.domain.dictionary.repository;
 import org.sav.cardsback.dto.StatisticAttemptDto;
 import org.sav.cardsback.dto.StatisticComonDto;
 import org.sav.cardsback.entity.Word;
+import org.sav.cardsback.entity.WordState;
+import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
@@ -15,7 +17,8 @@ import java.util.Optional;
 
 public interface WordRepository extends JpaRepository<Word, Long> {
 
-	List<Word> findAllByUserId(Long userId);
+	Page<Word> findAllByUserId(Long userId, Pageable pageable);
+	Page<Word> findAllByUserIdAndState(Long userId, WordState state, Pageable pageable);
 	Optional<Word> findByUserIdAndEnglish(Long userId, String w);
 	Word findByIdAndUserId(Long id, Long userId);
 

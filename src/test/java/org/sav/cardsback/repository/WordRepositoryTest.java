@@ -11,6 +11,7 @@ import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
 import org.springframework.boot.test.autoconfigure.orm.jpa.TestEntityManager;
 import org.sav.cardsback.entity.Word;
 import org.sav.cardsback.entity.WordState;
+import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 
 import java.time.OffsetDateTime;
@@ -31,18 +32,35 @@ class WordRepositoryTest {
     private WordRepository wordRepository;
 
     @Test
-    void findAllByUserId_shouldReturnWordsForUser() {
-        WordState state = createAndPersistWordState(1);
-        createAndPersistWord("test1", "тест1", 1L, state);
-        createAndPersistWord("test2", "тест2", 1L, state);
-        createAndPersistWord("test3", "тест3", 2L, state);
+    void findAllByUserId_shouldReturnWordsPage() {
+        WordState state1 = createAndPersistWordState(1);
+        createAndPersistWord("test1", "тест1", 1L, state1);
+        createAndPersistWord("test2", "тест2", 1L, state1);
+        createAndPersistWord("test3", "тест3", 2L, state1);
 
-        List<Word> result = wordRepository.findAllByUserId(1L);
+        Page<Word> result = wordRepository.findAllByUserId(1L, PageRequest.of(0, 10));
 
-        assertEquals(2, result.size());
+        assertEquals(2, result.getTotalElements());
         assertTrue(result.stream().anyMatch(w -> w.getEnglish().equals("test1")));
         assertTrue(result.stream().anyMatch(w -> w.getEnglish().equals("test2")));
     }
+
+    @Test
+    void findAllByUserIdAndState_shouldReturnWordsPage() {
+        WordState state1 = createAndPersistWordState(1);
+        WordState state2 = createAndPersistWordState(2);
+
+        createAndPersistWord("test1", "тест1", 1L, state1);
+        createAndPersistWord("test2", "тест2", 1L, state2);
+        createAndPersistWord("test3", "тест3", 2L, state1);
+
+        Page<Word> result = wordRepository.findAllByUserIdAndState(1L, state1, PageRequest.of(0, 10));
+
+        assertEquals(1, result.getTotalElements());
+        assertEquals("test1", result.getContent().get(0).getEnglish());
+    }
+
+
 
     @Test
     void findByUserIdAndEnglish_shouldReturnWord_whenExists() {

@@ -17,7 +17,7 @@ public interface DictionaryRepository extends JpaRepository<DictWord, Long> {
 
 	@Modifying
 	@Transactional
-	@Query("DELETE FROM DictWord w WHERE w.wordText = :wordText")
+	@Query("DELETE FROM DictWord w WHERE w.wordText = :wordText And w.state = 0")
 	void deleteByWordText(String wordText);
 
 	@Query("""

@@ -15,6 +15,9 @@ import org.sav.cardsback.domain.dictionary.service.WordService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 
@@ -78,20 +81,48 @@ class WordControllerTest {
 	}
 
 	@Test
-	void getAllByUser() throws Exception {
-		when(wordService.findAllByUserId(userId)).thenReturn(List.of(word));
-		when(wordMapper.toDtoList(List.of(word))).thenReturn(List.of(wordDto));
+	void getAllByUser_emptyState_returnsWordsPage() throws Exception {
+		Page<Word> page = new PageImpl<>(List.of(word));
+
+		when(wordService.findAllByUserId(eq(userId), eq(""), any(Pageable.class)))
+				.thenReturn(page);
+
+		when(wordMapper.toDto(word)).thenReturn(wordDto);
 
 		mockMvc.perform(get("/api/word/user/all")
-						.with(mockJwt(userId))
-				)
+						.param("state", "")
+						.param("page", "0")
+						.param("size", "10")
+						.with(mockJwt(userId)))
 				.andExpect(status().isOk())
-				.andExpect(jsonPath("$[0].id").value(1L))
-				.andExpect(jsonPath("$[0].english").value("hello"));
+				.andExpect(jsonPath("$.content[0].id").value(1L))
+				.andExpect(jsonPath("$.content[0].english").value("hello"));
 
-		verify(wordService).findAllByUserId(userId);
-		verify(wordMapper).toDtoList(List.of(word));
+		verify(wordService).findAllByUserId(eq(userId), eq(""), any(Pageable.class));
+		verify(wordMapper).toDto(word);
 	}
+
+	@Test
+	void getAllByUser_withState_returnsWordsPage() throws Exception {
+		Page<Word> page = new PageImpl<>(List.of(word));
+		String state = "STAGE_1";
+		when(wordService.findAllByUserId(eq(userId), eq(state), any(Pageable.class))).thenReturn(page);
+
+		when(wordMapper.toDto(word)).thenReturn(wordDto);
+
+		mockMvc.perform(get("/api/word/user/all")
+						.param("state", state)
+						.param("page", "0")
+						.param("size", "10")
+						.with(mockJwt(userId)))
+				.andExpect(status().isOk())
+				.andExpect(jsonPath("$.content[0].id").value(1L))
+				.andExpect(jsonPath("$.content[0].english").value("hello"));
+
+		verify(wordService).findAllByUserId(eq(userId), eq(state), any(Pageable.class));
+		verify(wordMapper).toDto(word);
+	}
+
 
 	@Test
 	void addWord() throws Exception {

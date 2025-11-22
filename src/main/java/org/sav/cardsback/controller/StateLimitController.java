@@ -1,5 +1,7 @@
 package org.sav.cardsback.controller;
 
+import io.swagger.v3.oas.annotations.Operation;
+import lombok.RequiredArgsConstructor;
 import org.sav.cardsback.dto.StateLimitDto;
 import org.sav.cardsback.dto.WordStateDto;
 import org.sav.cardsback.domain.dictionary.service.StateLimitService;
@@ -13,14 +15,12 @@ import java.util.List;
 
 @RestController
 @RequestMapping("/api/state")
+@RequiredArgsConstructor
 public class StateLimitController {
 
 	private final StateLimitService stateLimitService;
 
-	public StateLimitController(StateLimitService stateLimitService) {
-		this.stateLimitService = stateLimitService;
-	}
-
+	@Operation(summary = "Get all state limits", operationId = "getAllStateLimits")
 	@GetMapping("/all")
 	public ResponseEntity<List<StateLimitDto>> getAll() {
 		return ResponseEntity.ok(stateLimitService.findAll());
