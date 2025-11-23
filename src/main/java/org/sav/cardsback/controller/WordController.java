@@ -10,6 +10,7 @@ import org.springframework.boot.autoconfigure.data.web.SpringDataWebProperties;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.oauth2.jwt.Jwt;
@@ -42,7 +43,7 @@ public class WordController {
 
 		log.debug(">>>>>> getAllByUser for {}", jwt.getClaim(CLAIM_USER_ID).toString());
 
-		Pageable pageable = PageRequest.of(page, size);
+		Pageable pageable = PageRequest.of(page, size, Sort.by("id").ascending());
 		Page<Word> words = wordService.findAllByUserId(jwt.getClaim(CLAIM_USER_ID), state, pageable);
 		WordsPageDto<WordDto> dto = new WordsPageDto<>(
 				words.getContent().stream().map(wordMapper::toDto).toList(),
