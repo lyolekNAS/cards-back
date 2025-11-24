@@ -78,16 +78,18 @@ public class WordProcessingService {
 		List<Map.Entry<String, String>> defs = new ArrayList<>();
 
 		for (MWEntry e : entries) {
-			if (hasSteams(e)) {
-				stems.addAll(e.getMeta().getStems());
+			if(e.getMeta().getId().split(":", 2)[0].equalsIgnoreCase(dictWord.getWordText())) {
+				if (hasSteams(e)) {
+					stems.addAll(e.getMeta().getStems());
+				}
+				if (hasShortDefs(e)) {
+					for (String def : e.getShortDef()) {
+						defs.add(Map.entry(e.getFl(), def));
+					}
+				}
 			}
 			if (hasSyns(e)) {
 				syns.addAll(SynonymExtractor.extractSynonymWords(e.getSyns()));
-			}
-			if (hasShortDefs(e)) {
-				for (String def : e.getShortDef()) {
-					defs.add(Map.entry(e.getFl(), def));
-				}
 			}
 		}
 
