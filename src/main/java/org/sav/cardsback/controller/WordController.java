@@ -2,6 +2,8 @@ package org.sav.cardsback.controller;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.owasp.html.PolicyFactory;
+import org.owasp.html.Sanitizers;
 import org.sav.cardsback.dto.*;
 import org.sav.cardsback.entity.Word;
 import org.sav.cardsback.mapper.WordMapper;
@@ -26,6 +28,8 @@ public class WordController {
 	private final WordService wordService;
 	private final WordMapper wordMapper;
 	private static final String CLAIM_USER_ID = "userId";
+
+	PolicyFactory policy = Sanitizers.FORMATTING.and(Sanitizers.LINKS);
 
 
 	@GetMapping("/all")
@@ -62,6 +66,7 @@ public class WordController {
 	@PostMapping("/save")
 	public ResponseEntity<WordDto> addWord(@AuthenticationPrincipal Jwt jwt, @RequestBody WordDto wordDto) {
 		log.debug(">>>>>> addWord({})", wordDto);
+		wordDto.setDescription(policy.sanitize(wordDto.getDescription()));
 		Word word = wordMapper.toEntity(wordDto);
 		word.setUserId(jwt.getClaim(CLAIM_USER_ID));
 		log.debug(">>>>>> word {}", word);
