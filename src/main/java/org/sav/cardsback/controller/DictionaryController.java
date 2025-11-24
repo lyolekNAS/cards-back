@@ -29,6 +29,16 @@ public class DictionaryController {
 		return ResponseEntity.ok(words);
 	}
 
+	@GetMapping("/getNewWord")
+	public ResponseEntity<WordDto> getNewWord(@AuthenticationPrincipal Jwt jwt){
+		DictWord dw = null;
+		while(dw == null) {
+			dw = wordProcessingService.findUnprocessedWord();
+			dw = wordProcessingService.processWord(dw.getWordText());
+		}
+		return ResponseEntity.ok(wordProcessingService.dtoFromDict(dw));
+	}
+
 	@GetMapping("/getWord/{word}")
 	public ResponseEntity<DictWord> getWord(@PathVariable("word") String word, @AuthenticationPrincipal Jwt jwt){
 		DictWord words = wordProcessingService.processWord(word);
