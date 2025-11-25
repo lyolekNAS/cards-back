@@ -2,7 +2,6 @@ package org.sav.cardsback.domain.dictionary.service;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.sav.cardsback.domain.dictionary.model.WordStates;
 import org.sav.cardsback.domain.dictionary.repository.UserDictWordRepository;
 import org.sav.cardsback.dto.*;
 import org.sav.cardsback.entity.DictWord;
@@ -10,7 +9,6 @@ import org.sav.cardsback.entity.Word;
 import org.sav.cardsback.entity.WordState;
 import org.sav.cardsback.mapper.WordMapper;
 import org.sav.cardsback.domain.dictionary.repository.WordRepository;
-import org.springframework.boot.autoconfigure.data.web.SpringDataWebProperties;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -18,6 +16,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.OffsetDateTime;
+import java.time.ZoneId;
 import java.util.List;
 import java.util.Optional;
 import java.util.Random;
@@ -135,8 +134,15 @@ public class WordService {
 				? word.getState().getId() + 1
 				: WordStateDto.DONE.getId();
 
+		ZoneId zone = ZoneId.systemDefault();
+		OffsetDateTime nextTrainDay = OffsetDateTime.now()
+				.plusDays(stateLimit.getDelay())
+				.toLocalDate()
+				.atStartOfDay(zone)
+				.toOffsetDateTime();
+
 		word.setState(new WordState(nextStateId));
-		word.setNextTrain(OffsetDateTime.now().plusDays(stateLimit.getDelay()));
+		word.setNextTrain(nextTrainDay);
 		word.setEnglishCnt(0);
 		word.setUkrainianCnt(0);
 	}
