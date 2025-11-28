@@ -10,6 +10,7 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.time.OffsetDateTime;
 import java.util.List;
@@ -32,6 +33,23 @@ public interface WordRepository extends JpaRepository<Word, Long> {
             ORDER BY function('RAND')
         """)
 	List<Word> findWordToTrain(@Param("userId") Long userId, Pageable pageable);
+
+	@Query("""
+        SELECT w.id
+        FROM Word w
+        WHERE w.state.id = 0 AND w.userId = :userId
+        ORDER BY function('RAND')
+        """)
+	List<Long> findRandomIdsForUser(@Param("userId") Long userId, Pageable pageable);
+
+	@Modifying
+	@Transactional
+	@Query("""
+        UPDATE Word w
+        SET w.state.id = 1
+        WHERE w.id IN :ids
+        """)
+	int updateStateTo1(@Param("ids") List<Long> ids);
 
 	@Query("""
         Select new org.sav.cardsback.dto.StatisticAttemptDto(ws.id, count(w.id), coalesce(sum(sl.attempt - w.englishCnt), 0), coalesce(sum(sl.attempt - w.ukrainianCnt), 0))

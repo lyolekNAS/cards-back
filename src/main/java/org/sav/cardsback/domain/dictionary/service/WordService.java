@@ -102,6 +102,22 @@ public class WordService {
 		return true;
 	}
 
+
+	@Transactional
+	public int pickRandom5FromPause(Long userId) {
+
+		List<Long> ids = wordRepository.findRandomIdsForUser(
+				userId,
+				PageRequest.of(0, 5)
+		);
+
+		if (ids.isEmpty()) {
+			return 0;
+		}
+
+		return wordRepository.updateStateTo1(ids);
+	}
+
 	private void handleSuccess(Word word, TrainedWordDto dto) {
 		incrementCounter(word, dto.getLang());
 

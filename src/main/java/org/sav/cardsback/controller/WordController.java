@@ -121,4 +121,9 @@ public class WordController {
 		boolean resp = wordService.processTrainedWord(trainedWordDto, jwt.getClaim(CLAIM_USER_ID));
 		return resp ? ResponseEntity.ok("trained") : ResponseEntity.badRequest().body("error");
 	}
+
+	@PostMapping("/pick5Paused")
+	public int pickRandom5FromPause(@AuthenticationPrincipal Jwt jwt){
+		return wordService.pickRandom5FromPause(jwt.getClaim(CLAIM_USER_ID));
+	}
 }
