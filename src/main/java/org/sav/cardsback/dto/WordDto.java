@@ -25,6 +25,6 @@ public class WordDto {
 	OffsetDateTime nextTrain;
 	WordLangDto lang;
 	@Builder.Default
-	WordStateDto state = WordStateDto.STAGE_1;
+	WordStateDto state = WordStateDto.PAUSED;
 	long dictWordId;
 }
