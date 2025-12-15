@@ -16,6 +16,7 @@ import org.springframework.web.client.RestTemplate;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 
 @Component
 @RequiredArgsConstructor
@@ -60,10 +61,13 @@ public class WordnikRandomWordImporter {
 					continue;
 				}
 
-				DictWord processed = wordProcessingService.processWord(word);
-				if(processed != null && wordProcessingService.isWordSuitable(userId, processed)) {
-					result.add(wordProcessingService.dtoFromDict(processed));
-					log.debug("Processed word: {}", processed.getWordText());
+				Optional<DictWord> processed = wordProcessingService.processWord(word);
+				if(processed.isPresent()){
+					DictWord pw = processed.get();
+					if(wordProcessingService.isWordSuitable(userId, pw)) {
+						result.add(wordProcessingService.dtoFromDict(pw));
+						log.debug("Processed word: {}", pw.getWordText());
+					}
 				}
 			}
 

@@ -41,5 +41,5 @@ public interface DictionaryRepository extends JpaRepository<DictWord, Long> {
             ORDER BY RAND()
             LIMIT 1
         """, nativeQuery = true)
-	DictWord findWordToProcess(@Param("state") Integer state);
+	Optional<DictWord> findWordToProcess(@Param("state") Integer state);
 }

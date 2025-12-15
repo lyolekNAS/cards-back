@@ -9,6 +9,7 @@ import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 import org.springframework.stereotype.Service;
 
+import java.util.Optional;
 import java.util.concurrent.ThreadLocalRandom;
 import java.util.concurrent.TimeUnit;
 
@@ -23,10 +24,10 @@ public class MWMiner {
 	@Scheduled(fixedRate = 1)
 	public void mineNewWord(){
 		log.debug(">>> starting action");
-		DictWord dw = wordProcessingService.findUnprocessedWord();
-		log.debug(">>> processing word {}", dw.getWordText());
-		dw = wordProcessingService.processWord(dw.getWordText());
-		log.debug(">>> processed word {}", dw.getWordText());
+		Optional<DictWord> dw = wordProcessingService.findUnprocessedWord();
+		log.debug(">>> processing word {}", dw.orElseThrow().getWordText());
+		dw = wordProcessingService.processWord(dw.orElseThrow().getWordText());
+		dw.ifPresent(dictWord -> log.debug(">>> processed word {}", dictWord.getWordText()));
 		try {
 			long randomDelay = ThreadLocalRandom.current().nextLong(1_200_000);
 			Thread.sleep(randomDelay);
