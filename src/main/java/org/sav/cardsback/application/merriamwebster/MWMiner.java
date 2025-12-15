@@ -13,7 +13,7 @@ import java.util.concurrent.ThreadLocalRandom;
 import java.util.concurrent.TimeUnit;
 
 @Component
-@Profile("stillThinking")
+@Profile("prod")
 @RequiredArgsConstructor
 @Slf4j
 public class MWMiner {
@@ -28,7 +28,7 @@ public class MWMiner {
 		dw = wordProcessingService.processWord(dw.getWordText());
 		log.debug(">>> processed word {}", dw.getWordText());
 		try {
-			long randomDelay = ThreadLocalRandom.current().nextLong(600_000);
+			long randomDelay = ThreadLocalRandom.current().nextLong(1_200_000);
 			Thread.sleep(randomDelay);
 		} catch (InterruptedException e) {
 			log.error("Error on making delay", e);
