@@ -33,6 +33,7 @@ public class FormExtractor {
 
 		List<DictWordForm> forms = stems.stream()
 				.filter(w -> !w.contains(" "))
+				.map(String::toLowerCase)
 				.distinct()
 				.map(w -> {
 					DictWordForm dwf = formRepository.getFormByWordText(w)
