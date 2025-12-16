@@ -72,7 +72,7 @@ public class WordProcessingService {
 			log.debug("changing word for: {}", word);
 			dictWord = getDictWord(word);
 			if(dictWord.hasState(WordStates.MERR_WEBSTER)){
-				log.debug("{} already processed as lema", word);
+				log.debug("{} already processed as lemma {}", word, dictWord.getWordText());
 				return Optional.of(dictWord);
 			}
 		}
