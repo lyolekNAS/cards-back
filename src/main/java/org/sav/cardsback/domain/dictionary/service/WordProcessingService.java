@@ -71,6 +71,10 @@ public class WordProcessingService {
 			word = entries.getFirst().getMeta().getId().split(":", 2)[0];
 			log.debug("changing word for: {}", word);
 			dictWord = getDictWord(word);
+			if(dictWord.hasState(WordStates.MERR_WEBSTER)){
+				log.debug("{} already processed as lema", word);
+				return Optional.of(dictWord);
+			}
 		}
 
 		Set<String> stems = new HashSet<>();
