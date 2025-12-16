@@ -77,36 +77,12 @@ public class WordProcessingService {
 			}
 		}
 
-		Set<String> stems = new HashSet<>();
-		Set<String> syns = new HashSet<>();
-		List<Map.Entry<String, String>> defs = new ArrayList<>();
+		prepareWord(dictWord, entries);
 
-		for (MWEntry e : entries) {
-			if(e.getMeta().getId().split(":", 2)[0].equalsIgnoreCase(dictWord.getWordText())) {
-				if (hasSteams(e)) {
-					stems.addAll(e.getMeta().getStems());
-				}
-				if (hasShortDefs(e)) {
-					for (String def : e.getShortDef()) {
-						defs.add(Map.entry(e.getFl(), def));
-					}
-				}
-			}
-			if (hasSyns(e)) {
-				syns.addAll(SynonymExtractor.extractSynonymWords(e.getSyns()));
-			}
-		}
-
-		dictWord.setForms(formExtractor.createForms(stems, dictWord));
-		synonymExtractorService.saveSynonyms(syns);
-		dictWord.getDefinitions().addAll(definitionExtractor.createDefinitions(dictWord, defs));
-		dictWord.getTranslations().addAll(translationService.getTranslations(dictWord));
-
-		dictWord.addState(WordStates.MERR_WEBSTER);
 		dictionaryRepository.save(dictWord);
 
-		log.info("Processed '{}': forms={}, syns={}, defs={}",
-				word, dictWord.getForms().size(), syns.size(), dictWord.getDefinitions().size());
+		log.info("Processed '{}': forms={}, defs={}",
+				word, dictWord.getForms().size(), dictWord.getDefinitions().size());
 		return Optional.of(dictWord);
 	}
 
@@ -179,6 +155,36 @@ public class WordProcessingService {
 	}
 	private boolean hasShortDefs(MWEntry e){
 		return e.getShortDef() != null && e.getFl() != null;
+	}
+
+	private void prepareWord(DictWord dictWord, List<MWEntry> entries){
+
+		Set<String> stems = new HashSet<>();
+		Set<String> syns = new HashSet<>();
+		List<Map.Entry<String, String>> defs = new ArrayList<>();
+
+		for (MWEntry e : entries) {
+			if(e.getMeta().getId().split(":", 2)[0].equalsIgnoreCase(dictWord.getWordText())) {
+				if (hasSteams(e)) {
+					stems.addAll(e.getMeta().getStems());
+				}
+				if (hasShortDefs(e)) {
+					for (String def : e.getShortDef()) {
+						defs.add(Map.entry(e.getFl(), def));
+					}
+				}
+			}
+			if (hasSyns(e)) {
+				syns.addAll(SynonymExtractor.extractSynonymWords(e.getSyns()));
+			}
+		}
+
+		dictWord.setForms(formExtractor.createForms(stems, dictWord));
+		synonymExtractorService.saveSynonyms(syns);
+		dictWord.getDefinitions().addAll(definitionExtractor.createDefinitions(dictWord, defs));
+		dictWord.getTranslations().addAll(translationService.getTranslations(dictWord));
+
+		dictWord.addState(WordStates.MERR_WEBSTER);
 	}
 }
 
