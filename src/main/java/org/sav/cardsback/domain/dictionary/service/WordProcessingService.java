@@ -38,12 +38,12 @@ public class WordProcessingService {
 	private final LemmaResolverService lemmaResolverService;
 
 	@Transactional
-	public Optional<DictWord> processWord(String word) {
+	public DictWord processWord(String word) {
 
 		DictWord dictWord = getDictWord(word);
 		if (dictWord.hasState(WordStates.MERR_WEBSTER)) {
 			log.debug("{} already processed", word);
-			return Optional.of(dictWord);
+			return dictWord;
 		}
 
 		String queryWord = word;
@@ -55,7 +55,7 @@ public class WordProcessingService {
 			dictWord.addState(WordStates.FAKE);
 			dictionaryRepository.save(dictWord);
 			log.info("Word {} is FAKE!!!", dictWord.getWordText());
-			return Optional.empty();
+			return dictWord;
 		}
 
 		String mostFrequent = entries.stream()
@@ -73,7 +73,7 @@ public class WordProcessingService {
 			dictWord = getDictWord(word);
 			if(dictWord.hasState(WordStates.MERR_WEBSTER)){
 				log.debug("{} already processed as lemma {}", word, dictWord.getWordText());
-				return Optional.of(dictWord);
+				return dictWord;
 			}
 		}
 
@@ -83,7 +83,7 @@ public class WordProcessingService {
 
 		log.info("Processed '{}': forms={}, defs={}",
 				word, dictWord.getForms().size(), dictWord.getDefinitions().size());
-		return Optional.of(dictWord);
+		return dictWord;
 	}
 
 	public boolean isWordSuitable(Long userId, DictWord word){

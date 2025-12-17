@@ -5,6 +5,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.sav.cardsback.domain.dictionary.model.PartOfSpeech;
+import org.sav.cardsback.domain.dictionary.model.WordStates;
 import org.sav.cardsback.domain.dictionary.service.WordProcessingService;
 import org.sav.cardsback.dto.WordDto;
 import org.sav.cardsback.entity.DictWord;
@@ -61,13 +62,10 @@ public class WordnikRandomWordImporter {
 					continue;
 				}
 
-				Optional<DictWord> processed = wordProcessingService.processWord(word);
-				if(processed.isPresent()){
-					DictWord pw = processed.get();
-					if(wordProcessingService.isWordSuitable(userId, pw)) {
-						result.add(wordProcessingService.dtoFromDict(pw));
-						log.debug("Processed word: {}", pw.getWordText());
-					}
+				DictWord processed = wordProcessingService.processWord(word);
+				if(processed.hasNoState(WordStates.FAKE) && wordProcessingService.isWordSuitable(userId, processed)) {
+					result.add(wordProcessingService.dtoFromDict(processed));
+					log.debug("Processed word: {}", processed.getWordText());
 				}
 			}
 

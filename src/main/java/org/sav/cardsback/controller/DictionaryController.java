@@ -3,6 +3,7 @@ package org.sav.cardsback.controller;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.sav.cardsback.application.wordnik.WordnikRandomWordImporter;
+import org.sav.cardsback.domain.dictionary.model.WordStates;
 import org.sav.cardsback.domain.dictionary.service.WordProcessingService;
 import org.sav.cardsback.dto.WordDto;
 import org.sav.cardsback.entity.DictWord;
@@ -12,7 +13,6 @@ import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
-import java.util.Optional;
 
 
 @RestController
@@ -32,17 +32,17 @@ public class DictionaryController {
 
 	@GetMapping("/getNewWord")
 	public ResponseEntity<WordDto> getNewWord(@AuthenticationPrincipal Jwt jwt){
-		Optional<DictWord> dw = Optional.empty();
-		while(dw.isEmpty()) {
-			dw = wordProcessingService.findUnprocessedWord();
-			dw = wordProcessingService.processWord(dw.orElseThrow().getWordText());
+		DictWord dw = new DictWord();
+		while(dw == null || dw.hasState(WordStates.FAKE)) {
+			dw = wordProcessingService.findUnprocessedWord().orElseThrow();
+			dw = wordProcessingService.processWord(dw.getWordText());
 		}
-		return ResponseEntity.ok(wordProcessingService.dtoFromDict(dw.get()));
+		return ResponseEntity.ok(wordProcessingService.dtoFromDict(dw));
 	}
 
 	@GetMapping("/getWord/{word}")
-	public ResponseEntity<Optional<DictWord>> getWord(@PathVariable("word") String word, @AuthenticationPrincipal Jwt jwt){
-		Optional<DictWord> words = wordProcessingService.processWord(word);
+	public ResponseEntity<DictWord> getWord(@PathVariable("word") String word, @AuthenticationPrincipal Jwt jwt){
+		DictWord words = wordProcessingService.processWord(word);
 		return ResponseEntity.ok(words);
 	}
 

@@ -164,7 +164,7 @@ public class WordService {
 	}
 
 	private WordDto getWordFromDict(String word){
-		DictWord dw = wordProcessingService.processWord(word).orElseThrow();
+		DictWord dw = wordProcessingService.processWord(word);
 		return wordProcessingService.dtoFromDict(dw);
 	}
 }

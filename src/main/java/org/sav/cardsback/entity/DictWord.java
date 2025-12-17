@@ -42,4 +42,7 @@ public class DictWord {
 	public boolean hasState(WordStates s){
 		return (state & s.getId()) > 0;
 	}
+	public boolean hasNoState(WordStates s){
+		return !hasState(s);
+	}
 }
