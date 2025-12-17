@@ -133,7 +133,7 @@ public class WordProcessingService {
 	}
 
 	public Optional<DictWord> findUnprocessedWord(){
-		return dictionaryRepository.findWordToProcess(WordStates.MERR_WEBSTER.getId());
+		return dictionaryRepository.findWordToProcess(WordStates.MERR_WEBSTER.getId() | WordStates.FAKE.getId());
 	}
 
 	private DictWord getDictWord(String word) {

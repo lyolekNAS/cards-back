@@ -3,7 +3,7 @@ package org.sav.cardsback.dto;
 import java.util.List;
 
 public record WordsPageDto<T>(
-		List<WordDto> content,
+		List<T> content,
 		int number,
 		int size,
 		long totalElements,
