@@ -32,7 +32,7 @@ public class DictionaryController {
 
 	@GetMapping("/getNewWord")
 	public ResponseEntity<WordDto> getNewWord(@AuthenticationPrincipal Jwt jwt){
-		DictWord dw = new DictWord();
+		DictWord dw = null;
 		while(dw == null || dw.hasState(WordStates.FAKE)) {
 			dw = wordProcessingService.findUnprocessedWord().orElseThrow();
 			dw = wordProcessingService.processWord(dw.getWordText());
