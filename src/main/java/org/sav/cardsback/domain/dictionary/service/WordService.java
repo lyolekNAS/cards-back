@@ -76,7 +76,7 @@ public class WordService {
 		StatisticDto stat = new StatisticDto();
 		stat.setStatisticsAttemptDto(wordRepository.getStatisticAttempt(userId));
 		stat.setStatisticsComonDto(wordRepository.getStatisticCommon(userId));
-		stat.setTotalCommonCount(stat.getStatisticsComonDto().stream().mapToLong(StatisticComonDto::getCount).sum());
+		stat.setTotalCommonCount(stat.getStatisticsComonDto().stream().filter(sa -> sa.getStateId() != WordStateDto.PAUSED.getId()).mapToLong(StatisticComonDto::getCount).sum());
 		stat.setTotalAttemptCount(stat.getStatisticsAttemptDto().stream().filter(sa -> sa.getStateId() != WordStateDto.PAUSED.getId()).mapToLong(StatisticAttemptDto::getCount).sum());
 		stat.setTotalAttemptSum(stat.getStatisticsAttemptDto().stream().mapToLong(s -> s.getUkrainianCnt() + s.getEnglishCnt()).sum());
 		stat.setTotalKnown(userDictWordRepository.countByUserIdAndIsKnown(userId, true));
