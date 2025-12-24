@@ -17,6 +17,7 @@ import org.sav.cardsback.entity.DictWord;
 import org.sav.cardsback.entity.UserDictWord;
 import org.sav.cardsback.application.merriamwebster.MWClient;
 import org.sav.cardsback.application.merriamwebster.SynonymExtractor;
+import org.sav.cardsback.mapper.WordMapper;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -36,6 +37,7 @@ public class WordProcessingService {
 	private final TranslationService translationService;
 	private final SynonymExtractorService synonymExtractorService;
 	private final LemmaResolverService lemmaResolverService;
+	private final WordMapper wordMapper;
 
 	@Transactional
 	public DictWord processWord(String word) {
@@ -103,6 +105,8 @@ public class WordProcessingService {
 								.map(DictTrans::getWordText)
 								.collect(Collectors.joining(", "))
 				)
+				.dictWordFreqSum(wordMapper.sumDictWordFreq(dw))
+				.rarity(wordMapper.calcRarity(dw))
 				.build();
 
 	}

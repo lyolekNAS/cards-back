@@ -27,4 +27,6 @@ public class WordDto {
 	@Builder.Default
 	WordStateDto state = WordStateDto.PAUSED;
 	long dictWordId;
+	long dictWordFreqSum;
+	int rarity;
 }
