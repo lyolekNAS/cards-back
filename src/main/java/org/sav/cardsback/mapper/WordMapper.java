@@ -50,10 +50,10 @@ public interface WordMapper {
 	default int calcRarity(DictWord dictWord) {
 		long f = sumDictWordFreq(dictWord);
 
-		if (f > 30_000_000) return 1;
-		if (f > 10_000_000) return 2;
-		if (f > 4_000_000)  return 3;
-		if (f > 1_500_000)  return 4;
+		if (f > 27_200_000) return 1;
+		if (f > 7_300_000) return 2;
+		if (f > 2_400_000)  return 3;
+		if (f > 800_000)  return 4;
 		return 5;
 	}
 
