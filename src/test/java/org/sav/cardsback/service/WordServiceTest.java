@@ -6,10 +6,13 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.sav.cardsback.domain.dictionary.repository.DictWordFormRepository;
 import org.sav.cardsback.domain.dictionary.repository.UserDictWordRepository;
 import org.sav.cardsback.domain.dictionary.service.StateLimitService;
 import org.sav.cardsback.domain.dictionary.service.WordService;
 import org.sav.cardsback.dto.*;
+import org.sav.cardsback.entity.DictWord;
+import org.sav.cardsback.entity.DictWordForm;
 import org.sav.cardsback.entity.Word;
 import org.sav.cardsback.entity.WordState;
 import org.sav.cardsback.mapper.WordMapper;
@@ -35,6 +38,9 @@ class WordServiceTest {
     private WordRepository wordRepository;
 
     @Mock
+    private DictWordFormRepository dictWordFormRepository;
+
+    @Mock
     private UserDictWordRepository userDictWordRepository;
 
     @Mock
@@ -49,6 +55,8 @@ class WordServiceTest {
     private Word testWord;
     private WordDto testWordDto;
     private StateLimitDto stateLimit;
+    private DictWordForm testDictWordForm;
+    private DictWord testDictWord;
     private final Long userId = 1L;
 
     @BeforeEach
@@ -76,6 +84,18 @@ class WordServiceTest {
         stateLimit.setState(WordStateDto.STAGE_1);
         stateLimit.setAttempt(10);   // ліміт збігся з testWord
         stateLimit.setDelay(0);      // щоб спрацював DONE
+
+        testDictWord = new DictWord();
+        testDictWord.setId(1L);
+        testDictWord.setState(0);
+        testDictWord.setWordText("test");
+
+
+        testDictWordForm = new DictWordForm();
+        testDictWordForm.setId(1L);
+        testDictWordForm.setWordText("test");
+        testDictWordForm.setLemma(testDictWord);
+
     }
 
     @Test
@@ -131,6 +151,7 @@ class WordServiceTest {
 
     @Test
     void findByUserIdAndEnglish_ReturnsWord() {
+        when(dictWordFormRepository.findByWordText("test")).thenReturn(Optional.of(testDictWordForm));
         when(wordRepository.findByUserIdAndEnglish(userId, "test")).thenReturn(Optional.of(testWord));
         when(wordMapper.toDto(testWord)).thenReturn(testWordDto);
 

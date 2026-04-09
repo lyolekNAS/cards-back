@@ -2,6 +2,8 @@ package org.sav.cardsback.domain.dictionary.service;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.sav.cardsback.domain.dictionary.repository.DictWordFormRepository;
+import org.sav.cardsback.domain.dictionary.repository.DictionaryRepository;
 import org.sav.cardsback.domain.dictionary.repository.UserDictWordRepository;
 import org.sav.cardsback.dto.*;
 import org.sav.cardsback.entity.DictWord;
@@ -26,6 +28,7 @@ import java.util.Random;
 @RequiredArgsConstructor
 public class WordService {
 	private final WordRepository wordRepository;
+	private final DictWordFormRepository dictWordFormRepository;
 	private final StateLimitService stateLimitService;
 	private final UserDictWordRepository userDictWordRepository;
 	private final WordProcessingService wordProcessingService;
@@ -47,6 +50,9 @@ public class WordService {
 
 	public WordDto findByUserIdAndEnglish(Long userId, String english) {
 		WordDto wordDto;
+		english = dictWordFormRepository.findByWordText(english)
+				.map(f -> f.getLemma() != null ? f.getLemma().getWordText() : null)
+				.orElse(english);
 		Optional<Word> word = wordRepository.findByUserIdAndEnglish(userId, english);
 		if(word.isPresent()) {
 			wordDto = wordMapper.toDto(word.get());

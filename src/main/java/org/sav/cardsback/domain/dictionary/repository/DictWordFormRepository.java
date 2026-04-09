@@ -10,7 +10,6 @@ public interface DictWordFormRepository extends JpaRepository<DictWordForm, Long
 	Optional<DictWordForm> findByWordText(String wordText);
 
 
-
 	@Query("""
         SELECT dwf
             FROM DictWordForm dwf
