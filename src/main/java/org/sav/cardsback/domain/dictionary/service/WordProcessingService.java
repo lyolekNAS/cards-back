@@ -41,51 +41,59 @@ public class WordProcessingService {
 
 	@Transactional
 	public DictWord processWord(String word) {
-
-		DictWord dictWord = getDictWord(word);
-		if (dictWord.hasState(WordStates.MERR_WEBSTER)) {
-			log.debug("{} already processed", word);
-			return dictWord;
-		}
-
-		String queryWord = word;
-		List<MWEntry> entries = mwClient.fetchWord(word).stream()
-				.filter(e -> queryWord.equalsIgnoreCase(e.getMeta().getId().split(":", 2)[0]) || e.getMeta().getStems().contains(queryWord))
-				.filter(e -> PartOfSpeech.isValid(e.getFl()))
-				.toList();
-		if(entries.isEmpty()){
-			dictWord.addState(WordStates.FAKE);
-			dictionaryRepository.save(dictWord);
-			log.info("Word {} is FAKE!!!", dictWord.getWordText());
-			return dictWord;
-		}
-
-		String mostFrequent = entries.stream()
-				.map(e -> e.getMeta().getId())
-				.collect(Collectors.groupingBy(s -> s, LinkedHashMap::new, Collectors.counting()))
-				.entrySet()
-				.stream()
-				.max(Map.Entry.comparingByValue())
-				.map(Map.Entry::getKey)
-				.orElse(entries.getFirst().getMeta().getId());
-
-		if(!mostFrequent.equalsIgnoreCase(word)){
-			word = entries.getFirst().getMeta().getId().split(":", 2)[0];
-			log.debug("changing word for: {}", word);
-			dictWord = getDictWord(word);
-			if(dictWord.hasState(WordStates.MERR_WEBSTER)){
-				log.debug("{} already processed as lemma {}", word, dictWord.getWordText());
+		int cnt = 0;
+		while (cnt++ < 2) {
+			DictWord dictWord = getDictWord(word);
+			if (dictWord.hasState(WordStates.MERR_WEBSTER)) {
+				log.debug("{} already processed", word);
 				return dictWord;
 			}
+
+			String queryWord = word;
+			List<MWEntry> entries = mwClient.fetchWord(word).stream()
+					.filter(e -> queryWord.equalsIgnoreCase(e.getMeta().getId().split(":", 2)[0]) || e.getMeta().getStems().contains(queryWord))
+					.filter(e -> PartOfSpeech.isValid(e.getFl()))
+					.toList();
+			log.debug("entries: {}", entries);
+			if (entries.isEmpty()) {
+				dictWord.addState(WordStates.FAKE);
+				dictionaryRepository.save(dictWord);
+				log.info("Word {} is FAKE!!!", dictWord.getWordText());
+				return dictWord;
+			}
+
+			String mostFrequent = entries.stream()
+					.map(e -> e.getMeta().getId())
+					.collect(Collectors.groupingBy(s -> s, LinkedHashMap::new, Collectors.counting()))
+					.entrySet()
+					.stream()
+					.max(Map.Entry.comparingByValue())
+					.map(Map.Entry::getKey)
+					.orElse(entries.getFirst().getMeta().getId())
+					.split(":", 2)[0];
+			log.debug("mostFrequent: {}", mostFrequent);
+
+			if (!mostFrequent.equalsIgnoreCase(word)) {
+				word = mostFrequent;
+				log.debug("changing word for: {}", word);
+				dictWord = getDictWord(word);
+				if (dictWord.hasState(WordStates.MERR_WEBSTER)) {
+					log.debug("{} already processed as lemma {}", word, dictWord.getWordText());
+					return dictWord;
+				}
+				continue;
+			}
+
+			prepareWord(dictWord, entries);
+
+			dictionaryRepository.save(dictWord);
+
+			log.info("Processed '{}': forms={}, defs={}",
+					word, dictWord.getForms().size(), dictWord.getDefinitions().size());
+			return dictWord;
 		}
-
-		prepareWord(dictWord, entries);
-
-		dictionaryRepository.save(dictWord);
-
-		log.info("Processed '{}': forms={}, defs={}",
-				word, dictWord.getForms().size(), dictWord.getDefinitions().size());
-		return dictWord;
+		log.info(">>>>>>>>>>>>>>>>>>>>>ATTENTION<<<<<<<<<<<<<<<<<<<<<<<<<<");
+		return null;
 	}
 
 	public boolean isWordSuitable(Long userId, DictWord word){
