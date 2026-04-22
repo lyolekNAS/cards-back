@@ -1,5 +1,6 @@
 package org.sav.cardsback.controller;
 
+import io.swagger.v3.oas.annotations.Operation;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.owasp.html.PolicyFactory;
@@ -19,6 +20,7 @@ import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.concurrent.ThreadLocalRandom;
 
 @RestController
 @RequestMapping("/api/word")
@@ -83,6 +85,24 @@ public class WordController {
 		return ResponseEntity.ok(wordDto);
 	}
 
+	@GetMapping("/{id}")
+	@Operation(operationId = "getWordById")
+	public ResponseEntity<WordDto> getById(@AuthenticationPrincipal Jwt jwt, @PathVariable Long id){
+		log.debug(">>>>>> getById {} for user {}", id, jwt.getClaim(CLAIM_USER_ID).toString());
+		Word word = wordService.findByIdAndUserId(id, jwt.getClaim(CLAIM_USER_ID));
+		if(word == null){
+			return ResponseEntity.ok().build();
+		}
+		WordDto wordDto = wordMapper.toDto(word);
+		if (ThreadLocalRandom.current().nextInt(2) > 0) {
+			wordDto.setLang(WordLangDto.EN);
+		} else {
+			wordDto.setLang(WordLangDto.UA);
+		}
+		log.debug(">>>>>> getById={}", word);
+		return ResponseEntity.ok( wordDto);
+	}
+
 	@DeleteMapping("/delete")
 	public ResponseEntity<String> deleteWord(@AuthenticationPrincipal Jwt jwt, @RequestParam("id") Long id){
 		log.debug(">>>>>> deleteWord {} for user {}", id, jwt.getClaim(CLAIM_USER_ID).toString());
@@ -106,6 +126,17 @@ public class WordController {
 		}
 		log.debug(">>>>>> found word {}", wordDto);
 		return ResponseEntity.ok(wordDto);
+	}
+
+	@GetMapping("/retro")
+	public ResponseEntity<List<Long>> getWordsForRetro(@AuthenticationPrincipal Jwt jwt){
+		log.debug(">>>>>> findWordForRetro for user {}", jwt.getClaim(CLAIM_USER_ID).toString());
+		List<Long> words = wordService.getWordsForRetro(jwt.getClaim(CLAIM_USER_ID));
+		if(words == null){
+			return ResponseEntity.ok().build();
+		}
+		log.debug(">>>>>> found {} words", words.size());
+		return ResponseEntity.ok(words);
 	}
 
 	@GetMapping("/statistic")

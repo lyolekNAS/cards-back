@@ -34,6 +34,15 @@ public interface WordRepository extends JpaRepository<Word, Long> {
         """)
 	List<Word> findWordToTrain(@Param("userId") Long userId, Pageable pageable);
 
+
+	@Query("""
+        SELECT w.id
+            FROM Word w
+            WHERE w.userId = :userId
+                AND w.state.id = 10
+        """)
+	List<Long> getWordsForRetro(@Param("userId") Long userId);
+
 	@Query("""
         SELECT w.id
         FROM Word w
