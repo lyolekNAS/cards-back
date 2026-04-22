@@ -29,7 +29,6 @@ jobs:
           run: ./mvnw clean verify -s .mvn/settings.xml
           env:
             SPRING_PROFILES_ACTIVE: test
-            GITHUB_TOKEN: ${{ secrets.MY_GITHUB_TOKEN }}
 
 
 
@@ -73,7 +72,5 @@ jobs:
         with:
           push: true
           tags: lyolek.synology.me:5555/nasa/cards-back:latest
-          secrets: | 
-            github_token=${{ secrets.MY_GITHUB_TOKEN }}
           cache-from: type=gha,scope=maven
           cache-to: type=gha,scope=maven,mode=max

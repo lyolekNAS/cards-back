@@ -113,11 +113,11 @@
 			<scope>provided</scope>
 		</dependency>
 
-		<dependency>
+		<!--dependency>
 			<groupId>org.sav.fornas</groupId>
 			<artifactId>dto</artifactId>
 			<version>1.0.3-SNAPSHOT</version>
-		</dependency>
+		</dependency-->
 
 
 		<dependency>
@@ -157,7 +157,7 @@
 			</plugin>
 		</plugins>
 	</build>
-	<repositories>
+	<!--repositories>
 		<repository>
 			<id>github</id>
 			<url>https://maven.pkg.github.com/lyolekNAS/dto</url>
@@ -169,5 +169,5 @@
 				<updatePolicy>always</updatePolicy>
 			</snapshots>
 		</repository>
-	</repositories>
+	</repositories-->
 </project>

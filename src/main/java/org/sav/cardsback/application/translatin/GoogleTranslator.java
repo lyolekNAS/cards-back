@@ -2,7 +2,7 @@ package org.sav.cardsback.application.translatin;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.sav.fornas.dto.google.TranslationResponse;
+import org.sav.cardsback.dto.google.TranslationResponse;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 
