@@ -29,7 +29,7 @@ public class WordExamplesRequestFactory {
 														3
 												)
 										),
-										new String[]{"word", "examples"}
+										List.of("word", "examples")
 								)
 						)
 				)

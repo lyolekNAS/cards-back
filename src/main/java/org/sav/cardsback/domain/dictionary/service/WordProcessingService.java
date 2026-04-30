@@ -10,7 +10,6 @@ import org.sav.cardsback.application.translatin.TranslationService;
 import org.sav.cardsback.domain.dictionary.model.PartOfSpeech;
 import org.sav.cardsback.domain.dictionary.model.WordStates;
 import org.sav.cardsback.domain.dictionary.model.mw.MWEntry;
-import org.sav.cardsback.domain.dictionary.repository.DictionaryRepository;
 import org.sav.cardsback.domain.dictionary.repository.UserDictWordRepository;
 import org.sav.cardsback.dto.WordDto;
 import org.sav.cardsback.entity.DictTrans;
@@ -31,7 +30,7 @@ import java.util.stream.Collectors;
 @Slf4j
 public class WordProcessingService {
 
-	private final DictionaryRepository dictionaryRepository;
+	private final DictionaryService dictionaryService;
 	private final UserDictWordRepository userDictWordRepository;
 	private final MWClient mwClient;
 	private final FormExtractor formExtractor;
@@ -60,7 +59,7 @@ public class WordProcessingService {
 			log.debug("entries: {}", entries);
 			if (entries.isEmpty()) {
 				dictWord.addState(WordStates.FAKE);
-				dictionaryRepository.save(dictWord);
+				dictionaryService.save(dictWord);
 				log.info("Word {} is FAKE!!!", dictWord.getWordText());
 				return dictWord;
 			}
@@ -89,7 +88,7 @@ public class WordProcessingService {
 
 			prepareWord(dictWord, entries);
 
-			dictionaryRepository.save(dictWord);
+			dictionaryService.save(dictWord);
 
 			log.info("Processed '{}': forms={}, defs={}",
 					word, dictWord.getForms().size(), dictWord.getDefinitions().size());
@@ -100,7 +99,7 @@ public class WordProcessingService {
 	}
 
 	public boolean isWordSuitable(Long userId, DictWord word){
-		return !dictionaryRepository.existsByUserAndDictWord(userId, word.getId());
+		return !dictionaryService.existsByUserAndDictWord(userId, word.getId());
 	}
 
 	public WordDto dtoFromDict(DictWord dw){
@@ -149,11 +148,11 @@ public class WordProcessingService {
 	}
 
 	public Optional<DictWord> findUnprocessedWord(){
-		return dictionaryRepository.findWordToProcess(WordStates.MERR_WEBSTER.getId() | WordStates.FAKE.getId(), 0);
+		return dictionaryService.findWordToProcess(WordStates.MERR_WEBSTER.getId() | WordStates.FAKE.getId(), 0);
 	}
 
 	public Optional<DictWord> findWordWithoutExamples(){
-		return dictionaryRepository.findWordToProcess(WordStates.WITH_EXAMPLES.getId() | WordStates.FAKE.getId(), WordStates.MERR_WEBSTER.getId());
+		return dictionaryService.findWordToProcess(WordStates.WITH_EXAMPLES.getId() | WordStates.FAKE.getId(), WordStates.MERR_WEBSTER.getId());
 	}
 
 	public WordDto enrichWithExamples(DictWord dw){
@@ -170,7 +169,7 @@ public class WordProcessingService {
 				.collect(Collectors.toCollection(ArrayList::new));
 		dw.setExamples(dwEx);
 		dw.addState(WordStates.WITH_EXAMPLES);
-		dictionaryRepository.save(dw);
+		dictionaryService.save(dw);
 		return dtoFromDict(dw);
 	}
 
@@ -180,7 +179,7 @@ public class WordProcessingService {
 	}
 
 	public WordDto enrichWithExamples(String word){
-		Optional<DictWord> dw = dictionaryRepository.findByWordText(word);
+		Optional<DictWord> dw = dictionaryService.findByWordText(word);
 		if(dw.isPresent() && dw.get().hasNoState(WordStates.WITH_EXAMPLES)) {
 			log.debug("dw: {}", dw.get());
 			return enrichWithExamples(dw.get());
@@ -193,7 +192,7 @@ public class WordProcessingService {
 				.orElseGet(() -> {
 					DictWord dw = new DictWord();
 					dw.setWordText(word);
-					dictionaryRepository.save(dw);
+					dictionaryService.save(dw);
 					return dw;
 				});
 	}

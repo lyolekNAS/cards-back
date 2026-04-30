@@ -22,14 +22,14 @@ public class WordTranslationsRequestFactory {
 										"object",
 										Map.of(
 												"word", new Property("string", null, null, null),
-												"translations", new Property(
+												"examples", new Property(
 														"array",
 														Map.of("type", "string"),
-														1,
-														5
+														3,
+														3
 												)
 										),
-										new String[]{"word", "translations"}
+										List.of("word", "examples")
 								)
 						)
 				)

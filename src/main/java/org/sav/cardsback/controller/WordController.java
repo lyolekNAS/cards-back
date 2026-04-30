@@ -5,11 +5,12 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.owasp.html.PolicyFactory;
 import org.owasp.html.Sanitizers;
+import org.sav.cardsback.domain.dictionary.service.DictionaryService;
 import org.sav.cardsback.dto.*;
+import org.sav.cardsback.entity.DictWordExamples;
 import org.sav.cardsback.entity.Word;
 import org.sav.cardsback.mapper.WordMapper;
 import org.sav.cardsback.domain.dictionary.service.WordService;
-import org.springframework.boot.autoconfigure.data.web.SpringDataWebProperties;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -29,6 +30,7 @@ import java.util.concurrent.ThreadLocalRandom;
 public class WordController {
 	private final WordService wordService;
 	private final WordMapper wordMapper;
+	private final DictionaryService dictionaryService;
 	private static final String CLAIM_USER_ID = "userId";
 
 	PolicyFactory policy = Sanitizers.FORMATTING.and(Sanitizers.LINKS);
@@ -94,12 +96,13 @@ public class WordController {
 			return ResponseEntity.ok().build();
 		}
 		WordDto wordDto = wordMapper.toDto(word);
+		wordDto.setExamples(dictionaryService.getExamples(wordDto.getDictWordId()));
 		if (ThreadLocalRandom.current().nextInt(2) > 0) {
 			wordDto.setLang(WordLangDto.EN);
 		} else {
 			wordDto.setLang(WordLangDto.UA);
 		}
-		log.debug(">>>>>> getById={}", word);
+		log.debug(">>>>>> getById={}", wordDto);
 		return ResponseEntity.ok( wordDto);
 	}
 
@@ -119,6 +122,7 @@ public class WordController {
 			return ResponseEntity.ok().build();
 		}
 		WordDto wordDto = wordMapper.toDto(word);
+		wordDto.setExamples(dictionaryService.getExamples(wordDto.getDictWordId()));
 		if (word.getEnglishCnt() < word.getUkrainianCnt()) {
 			wordDto.setLang(WordLangDto.EN);
 		} else {

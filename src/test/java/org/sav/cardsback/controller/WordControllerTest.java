@@ -4,6 +4,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
+import org.sav.cardsback.domain.dictionary.service.DictionaryService;
 import org.sav.cardsback.dto.StatisticDto;
 import org.sav.cardsback.dto.TrainedWordDto;
 import org.sav.cardsback.dto.WordDto;
@@ -40,6 +41,9 @@ class WordControllerTest {
 
 	@MockBean
 	private WordService wordService;
+
+	@MockBean
+	private DictionaryService dictionaryService;
 
 	@MockBean
 	private WordMapper wordMapper;
