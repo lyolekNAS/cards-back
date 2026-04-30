@@ -35,6 +35,10 @@ public class DictWord {
 	@JsonIgnoreProperties("lemma")
 	private List<DictTrans> translations = new ArrayList<>();
 
+	@OneToMany(mappedBy = "lemma", cascade = CascadeType.ALL)
+	@JsonIgnoreProperties("lemma")
+	private List<DictWordExamples> examples = new ArrayList<>();
+
 	public void addState(WordStates s){
 		state = state | s.getId();
 	}

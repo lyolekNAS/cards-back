@@ -37,9 +37,10 @@ public interface DictionaryRepository extends JpaRepository<DictWord, Long> {
 	@Query(value = """
         SELECT *
             FROM dict_word dw
-            WHERE (dw.state & :state) = 0
+            WHERE (dw.state & :forbidden) = 0
+                    AND (dw.state & :required) = :required
             ORDER BY RAND()
             LIMIT 1
         """, nativeQuery = true)
-	Optional<DictWord> findWordToProcess(@Param("state") Integer state);
+	Optional<DictWord> findWordToProcess(@Param("forbidden") Integer forbidden, @Param("required") Integer required);
 }

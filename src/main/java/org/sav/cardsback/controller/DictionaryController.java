@@ -50,4 +50,9 @@ public class DictionaryController {
 	public void setMarkOnWord(@RequestParam Long wordId, @RequestParam String mark, @AuthenticationPrincipal Jwt jwt){
 		wordProcessingService.setMarkOnWord(wordId, mark, jwt.getClaim("userId"));
 	}
+
+	@PostMapping("/enrichWithExamples")
+	public ResponseEntity<WordDto> enrichWithExamples(@RequestParam String word){
+		return ResponseEntity.ok(wordProcessingService.enrichWithExamples(word));
+	}
 }

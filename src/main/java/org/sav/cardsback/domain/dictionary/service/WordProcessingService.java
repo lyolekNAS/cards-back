@@ -2,6 +2,7 @@ package org.sav.cardsback.domain.dictionary.service;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.sav.cardsback.application.ai.OpenAIRequester;
 import org.sav.cardsback.application.dictionary.DefinitionExtractor;
 import org.sav.cardsback.application.dictionary.FormExtractor;
 import org.sav.cardsback.application.dictionary.SynonymExtractorService;
@@ -14,6 +15,7 @@ import org.sav.cardsback.domain.dictionary.repository.UserDictWordRepository;
 import org.sav.cardsback.dto.WordDto;
 import org.sav.cardsback.entity.DictTrans;
 import org.sav.cardsback.entity.DictWord;
+import org.sav.cardsback.entity.DictWordExamples;
 import org.sav.cardsback.entity.UserDictWord;
 import org.sav.cardsback.application.merriamwebster.MWClient;
 import org.sav.cardsback.application.merriamwebster.SynonymExtractor;
@@ -38,6 +40,7 @@ public class WordProcessingService {
 	private final SynonymExtractorService synonymExtractorService;
 	private final LemmaResolverService lemmaResolverService;
 	private final WordMapper wordMapper;
+	private final OpenAIRequester openAIRequester;
 
 	@Transactional
 	public DictWord processWord(String word) {
@@ -115,6 +118,7 @@ public class WordProcessingService {
 				)
 				.dictWordFreqSum(wordMapper.sumDictWordFreq(dw))
 				.rarity(wordMapper.calcRarity(dw))
+				.examples(dw.getExamples().stream().map(DictWordExamples::getExample).toList())
 				.build();
 
 	}
@@ -145,7 +149,43 @@ public class WordProcessingService {
 	}
 
 	public Optional<DictWord> findUnprocessedWord(){
-		return dictionaryRepository.findWordToProcess(WordStates.MERR_WEBSTER.getId() | WordStates.FAKE.getId());
+		return dictionaryRepository.findWordToProcess(WordStates.MERR_WEBSTER.getId() | WordStates.FAKE.getId(), 0);
+	}
+
+	public Optional<DictWord> findWordWithoutExamples(){
+		return dictionaryRepository.findWordToProcess(WordStates.WITH_EXAMPLES.getId() | WordStates.FAKE.getId(), WordStates.MERR_WEBSTER.getId());
+	}
+
+	public WordDto enrichWithExamples(DictWord dw){
+		List<String> examples = openAIRequester.getExamples(dw.getWordText());
+		if(examples.isEmpty())
+			return null;
+		List<DictWordExamples> dwEx = examples.stream()
+				.map(s -> {
+					DictWordExamples dwex = new DictWordExamples();
+					dwex.setLemma(dw);
+					dwex.setExample(s);
+					return dwex;
+				})
+				.collect(Collectors.toCollection(ArrayList::new));
+		dw.setExamples(dwEx);
+		dw.addState(WordStates.WITH_EXAMPLES);
+		dictionaryRepository.save(dw);
+		return dtoFromDict(dw);
+	}
+
+	public WordDto enrichWithExamples(){
+		Optional<DictWord> dw = findWordWithoutExamples();
+		return dw.map(this::enrichWithExamples).orElse(null);
+	}
+
+	public WordDto enrichWithExamples(String word){
+		Optional<DictWord> dw = dictionaryRepository.findByWordText(word);
+		if(dw.isPresent() && dw.get().hasNoState(WordStates.WITH_EXAMPLES)) {
+			log.debug("dw: {}", dw.get());
+			return enrichWithExamples(dw.get());
+		}
+		return null;
 	}
 
 	private DictWord getDictWord(String word) {

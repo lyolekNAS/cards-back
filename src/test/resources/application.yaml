@@ -46,6 +46,7 @@ app-props:
         datamuse: none
         azure: none
         merriam-webster: none
+        localai: none
     google:
         api-key: none
         translate-url: none

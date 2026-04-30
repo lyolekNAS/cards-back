@@ -9,6 +9,9 @@ import org.springframework.web.client.RestTemplate;
 @Configuration
 public class RestTemplateConfig {
 
+	@Value("${app-props.url.localai}")
+	private String localAIURL;
+
 	@Value("${app-props.url.azure}")
 	private String azureBaseURL;
 	@Value("${trans-azure-key}")
@@ -44,6 +47,13 @@ public class RestTemplateConfig {
 					request.getHeaders().add("X-goog-api-key", googleApiKey);
 					return execution.execute(request, body);
 				})
+				.build();
+	}
+
+	@Bean
+	public RestTemplate localAIRestTemplate(RestTemplateBuilder builder) {
+		return builder
+				.rootUri(localAIURL)
 				.build();
 	}
 }
