@@ -1,13 +1,15 @@
 package org.sav.cardsback.application.merriamwebster;
 
+import jakarta.annotation.PostConstruct;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.sav.cardsback.domain.dictionary.service.WordProcessingService;
 import org.sav.cardsback.entity.DictWord;
 import org.springframework.context.annotation.Profile;
-import org.springframework.scheduling.annotation.Scheduled;
+import org.springframework.scheduling.TaskScheduler;
 import org.springframework.stereotype.Component;
 
+import java.time.Instant;
 import java.util.concurrent.ThreadLocalRandom;
 
 @Component
@@ -16,21 +18,31 @@ import java.util.concurrent.ThreadLocalRandom;
 @Slf4j
 public class MWMiner {
 
-	private final WordProcessingService wordProcessingService;
+	private final TaskScheduler scheduler;
+	private final WordProcessingService service;
 
-	@Scheduled(fixedRate = 1)
-	public void mineNewWord(){
-		log.debug(">>> starting action");
-		DictWord dw = wordProcessingService.findUnprocessedWord().orElseThrow();
-		log.debug(">>> processing word {}", dw.getWordText());
-		dw = wordProcessingService.processWord(dw.getWordText());
-		log.debug(">>> processed word {}", dw.getWordText());
+	@PostConstruct
+	public void start() {
+		scheduleNext();
+	}
+
+	private void scheduleNext() {
+		long delay = ThreadLocalRandom.current().nextLong(1_200_000);
+
+		scheduler.schedule(this::run, Instant.now().plusMillis(delay));
+	}
+
+	private void run() {
 		try {
-			long randomDelay = ThreadLocalRandom.current().nextLong(1_200_000);
-			Thread.sleep(randomDelay);
-		} catch (InterruptedException e) {
-			log.error("Error on making delay", e);
-			Thread.currentThread().interrupt();
+			log.debug(">>> starting action");
+
+			DictWord dw = service.findUnprocessedWord().orElseThrow();
+			service.processWord(dw.getWordText());
+
+		} catch (Exception e) {
+			log.error("Error in miner", e);
+		} finally {
+			scheduleNext(); //плануємо наступний запуск
 		}
 	}
 }
