@@ -40,6 +40,7 @@ public class WordProcessingService {
 	private final LemmaResolverService lemmaResolverService;
 	private final WordMapper wordMapper;
 	private final OpenAIRequester openAIRequester;
+	private final AudioStorageService audioStorageService;
 
 	@Transactional
 	public DictWord processWord(String word) {
@@ -155,6 +156,10 @@ public class WordProcessingService {
 		return dictionaryService.findWordToProcess(WordStates.WITH_EXAMPLES.getId() | WordStates.FAKE.getId(), WordStates.MERR_WEBSTER.getId());
 	}
 
+	public Optional<DictWord> findWordWithoutSpeech(){
+		return dictionaryService.findWordToProcess(WordStates.WITH_SPEECH.getId() | WordStates.FAKE.getId(), WordStates.MERR_WEBSTER.getId());
+	}
+
 	public WordDto enrichWithExamples(DictWord dw){
 		List<String> examples = openAIRequester.getExamples(dw.getWordText());
 		if(examples.isEmpty())
@@ -185,6 +190,28 @@ public class WordProcessingService {
 			return enrichWithExamples(dw.get());
 		}
 		return null;
+	}
+
+	public String enrichWithSpeech(DictWord dw){
+		String word = dw.getWordText();
+		byte[] fileContent = openAIRequester.getSpeech(word);
+		dw.addState(WordStates.WITH_SPEECH);
+		dictionaryService.save(dw);
+		return audioStorageService.saveAudio(fileContent, word).toUri().getPath();
+	}
+
+	public String enrichWithSpeech(String word){
+		Optional<DictWord> dw = dictionaryService.findByWordText(word);
+		if(dw.isPresent() && dw.get().hasNoState(WordStates.WITH_SPEECH)) {
+			log.debug("dw: {}", dw.get());
+			return enrichWithSpeech(dw.get());
+		}
+		return null;
+	}
+
+	public String enrichWithSpeech(){
+		Optional<DictWord> dw = findWordWithoutSpeech();
+		return dw.map(this::enrichWithSpeech).orElse(null);
 	}
 
 	private DictWord getDictWord(String word) {

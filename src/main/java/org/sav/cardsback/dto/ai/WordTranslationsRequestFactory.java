@@ -9,20 +9,20 @@ public class WordTranslationsRequestFactory {
 		return new ChatRequest(
 				"ai-translator",
 				List.of(
-						new Message("user", word)
+						new ChatRequest.Message("user", word)
 				),
 				0.3,
 				0.9,
 				"none",
-				new ResponseFormat(
+				new ChatRequest.ResponseFormat(
 						"json_schema",
-						new JsonSchema(
+						new ChatRequest.ResponseFormat.JsonSchema(
 								"word_translations",
-								new Schema(
+								new ChatRequest.ResponseFormat.JsonSchema.Schema(
 										"object",
 										Map.of(
-												"word", new Property("string", null, null, null),
-												"examples", new Property(
+												"word", new ChatRequest.ResponseFormat.JsonSchema.Schema.Property("string", null, null, null),
+												"examples", new ChatRequest.ResponseFormat.JsonSchema.Schema.Property(
 														"array",
 														Map.of("type", "string"),
 														3,

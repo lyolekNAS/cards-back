@@ -47,9 +47,12 @@ app-props:
         azure: none
         merriam-webster: none
         localai: none
+        kokoro: none
     google:
         api-key: none
         translate-url: none
+    path:
+        speech: none
 
 trans-azure-key: key
 mymemory_email: key

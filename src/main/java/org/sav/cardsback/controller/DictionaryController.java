@@ -55,4 +55,9 @@ public class DictionaryController {
 	public ResponseEntity<WordDto> enrichWithExamples(@RequestParam String word){
 		return ResponseEntity.ok(wordProcessingService.enrichWithExamples(word));
 	}
+
+	@PostMapping("/enrichWithSpeech")
+	public ResponseEntity<String> enrichWithSpeech(@RequestParam String word){
+		return ResponseEntity.ok(wordProcessingService.enrichWithSpeech(word));
+	}
 }

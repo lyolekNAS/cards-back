@@ -12,6 +12,9 @@ public class RestTemplateConfig {
 	@Value("${app-props.url.localai}")
 	private String localAIURL;
 
+	@Value("${app-props.url.kokoro}")
+	private String kokoroURL;
+
 	@Value("${app-props.url.azure}")
 	private String azureBaseURL;
 	@Value("${trans-azure-key}")
@@ -54,6 +57,13 @@ public class RestTemplateConfig {
 	public RestTemplate localAIRestTemplate(RestTemplateBuilder builder) {
 		return builder
 				.rootUri(localAIURL)
+				.build();
+	}
+
+	@Bean
+	public RestTemplate kokoroRestTemplate(RestTemplateBuilder builder) {
+		return builder
+				.rootUri(kokoroURL)
 				.build();
 	}
 }

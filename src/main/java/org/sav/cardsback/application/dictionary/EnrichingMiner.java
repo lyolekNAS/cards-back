@@ -13,7 +13,7 @@ import org.springframework.transaction.annotation.Transactional;
 @Profile("prod")
 @RequiredArgsConstructor
 @Slf4j
-public class ExamplesMiner {
+public class EnrichingMiner {
 
 	private final WordProcessingService wordProcessingService;
 
@@ -24,5 +24,14 @@ public class ExamplesMiner {
 		log.debug(">>>> Starting mineExamples");
 		WordDto w = wordProcessingService.enrichWithExamples();
 		log.debug(">>>> Examples mined: {}", w);
+	}
+
+	@Transactional
+	@Scheduled(cron = "0 * 7-21 * * *", zone = "Europe/Kyiv")
+//	@Scheduled(cron = "0 * 9-10 * * *", zone = "Europe/Kyiv")
+	public void mineSpeech(){
+		log.debug(">>>> Starting mineSpeech");
+		String path = wordProcessingService.enrichWithSpeech();
+		log.debug(">>>> Speech mined: {}", path);
 	}
 }
