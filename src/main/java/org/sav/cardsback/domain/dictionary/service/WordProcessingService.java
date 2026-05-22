@@ -155,6 +155,13 @@ public class WordProcessingService {
 		return dictionaryService.findWordToProcess(WordStates.WITH_EXAMPLES.getId() | WordStates.FAKE.getId(), WordStates.MERR_WEBSTER.getId());
 	}
 
+	public long countWordsWithoutExamples() {
+		return dictionaryService.countWordsToProcess(
+				WordStates.WITH_EXAMPLES.getId() | WordStates.FAKE.getId(),
+				WordStates.MERR_WEBSTER.getId()
+		);
+	}
+
 	public WordDto enrichWithExamples(DictWord dw){
 		List<String> examples = openAIRequester.getExamples(dw.getWordText());
 		if(examples.isEmpty())
@@ -173,9 +180,16 @@ public class WordProcessingService {
 		return dtoFromDict(dw);
 	}
 
-	public WordDto enrichWithExamples(){
-		Optional<DictWord> dw = findWordWithoutExamples();
-		return dw.map(this::enrichWithExamples).orElse(null);
+	@Transactional
+	public void enrichWithExamples(int n){
+		for (int i = 0; i < n; i++) {
+			Optional<DictWord> dw = findWordWithoutExamples();
+			if (dw.isEmpty()) {
+				break;
+			}
+			WordDto processed = enrichWithExamples(dw.get());
+			log.debug(">>>> Examples mined: {}", processed);
+		}
 	}
 
 	public WordDto enrichWithExamples(String word){
@@ -238,4 +252,3 @@ public class WordProcessingService {
 		dictWord.addState(WordStates.MERR_WEBSTER);
 	}
 }
-

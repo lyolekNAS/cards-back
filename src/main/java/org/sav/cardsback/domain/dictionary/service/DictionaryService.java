@@ -2,7 +2,6 @@ package org.sav.cardsback.domain.dictionary.service;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.sav.cardsback.domain.dictionary.model.WordStates;
 import org.sav.cardsback.domain.dictionary.repository.DictionaryRepository;
 import org.sav.cardsback.entity.DictWord;
 import org.sav.cardsback.entity.DictWordExamples;
@@ -28,6 +27,10 @@ public class DictionaryService {
 
 	public Optional<DictWord> findWordToProcess(int forbidden, int required){
 		return dictionaryRepository.findWordToProcess(forbidden, required);
+	}
+
+	public long countWordsToProcess(int forbidden, int required){
+		return dictionaryRepository.countWordsToProcess(forbidden, required);
 	}
 
 	public Optional<DictWord> findByWordText(String word){

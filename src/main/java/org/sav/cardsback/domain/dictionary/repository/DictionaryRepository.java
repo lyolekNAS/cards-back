@@ -1,12 +1,15 @@
 package org.sav.cardsback.domain.dictionary.repository;
 
 import org.sav.cardsback.entity.DictWord;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.List;
 import java.util.Optional;
 
 public interface DictionaryRepository extends JpaRepository<DictWord, Long> {
@@ -34,13 +37,26 @@ public interface DictionaryRepository extends JpaRepository<DictWord, Long> {
     """)
 	boolean existsByUserAndDictWord(@Param("userId") Long userId, @Param("dictWordId") Long dictWordId);
 
-	@Query(value = """
-        SELECT *
-            FROM dict_word dw
-            WHERE (dw.state & :forbidden) = 0
-                    AND (dw.state & :required) = :required
-            ORDER BY RAND()
-            LIMIT 1
-        """, nativeQuery = true)
-	Optional<DictWord> findWordToProcess(@Param("forbidden") Integer forbidden, @Param("required") Integer required);
+	@Query("""
+        SELECT dw
+            FROM DictWord dw
+            WHERE bitand(dw.state, :forbidden) = 0
+                    AND bitand(dw.state, :required) = :required
+            ORDER BY function('RAND')
+        """)
+	List<DictWord> findWordToProcessInternal(@Param("forbidden") Integer forbidden, @Param("required") Integer required, Pageable pageable);
+
+	default Optional<DictWord> findWordToProcess(Integer forbidden, Integer required) {
+		return findWordToProcessInternal(forbidden, required, PageRequest.of(0, 1))
+				.stream()
+				.findFirst();
+	}
+
+	@Query("""
+        SELECT COUNT(dw)
+            FROM DictWord dw
+            WHERE bitand(dw.state, :forbidden) = 0
+                    AND bitand(dw.state, :required) = :required
+        """)
+	long countWordsToProcess(@Param("forbidden") Integer forbidden, @Param("required") Integer required);
 }
