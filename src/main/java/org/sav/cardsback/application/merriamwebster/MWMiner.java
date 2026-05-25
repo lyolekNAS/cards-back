@@ -27,7 +27,7 @@ public class MWMiner {
 	}
 
 	private void scheduleNext() {
-		long delay = ThreadLocalRandom.current().nextLong(1_200_000);
+		long delay = ThreadLocalRandom.current().nextLong(900_000);
 
 		scheduler.schedule(this::run, Instant.now().plusMillis(delay));
 	}
