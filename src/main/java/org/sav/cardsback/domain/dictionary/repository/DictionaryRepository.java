@@ -40,8 +40,8 @@ public interface DictionaryRepository extends JpaRepository<DictWord, Long> {
 	@Query("""
         SELECT dw
             FROM DictWord dw
-            WHERE bitand(dw.state, :forbidden) = 0
-                    AND bitand(dw.state, :required) = :required
+            WHERE bitand(dw.state, cast(:forbidden as integer)) = 0
+                    AND bitand(dw.state, cast(:required as integer)) = cast(:required as integer)
             ORDER BY function('RAND')
         """)
 	List<DictWord> findWordToProcessInternal(@Param("forbidden") Integer forbidden, @Param("required") Integer required, Pageable pageable);
@@ -55,8 +55,8 @@ public interface DictionaryRepository extends JpaRepository<DictWord, Long> {
 	@Query("""
         SELECT COUNT(dw)
             FROM DictWord dw
-            WHERE bitand(dw.state, :forbidden) = 0
-                    AND bitand(dw.state, :required) = :required
+            WHERE bitand(dw.state, cast(:forbidden as integer)) = 0
+                    AND bitand(dw.state, cast(:required as integer)) = cast(:required as integer)
         """)
 	long countWordsToProcess(@Param("forbidden") Integer forbidden, @Param("required") Integer required);
 }
