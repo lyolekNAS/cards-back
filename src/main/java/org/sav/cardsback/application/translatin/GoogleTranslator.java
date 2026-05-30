@@ -3,6 +3,7 @@ package org.sav.cardsback.application.translatin;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.sav.cardsback.dto.google.TranslationResponse;
+import org.sav.cardsback.entity.DictWord;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 
@@ -16,8 +17,8 @@ public class GoogleTranslator implements ITranslator{
 	private final RestTemplate gTranslateRestTemplate;
 
 	@Override
-	public List<String> processWord(String word) {
-		return List.of(translate(word));
+	public List<String> processWord(DictWord dictWord) {
+		return List.of(translate(dictWord.getWordText()));
 	}
 
 	private String translate(String w){

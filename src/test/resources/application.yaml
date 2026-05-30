@@ -8,6 +8,14 @@ logging:
 #        org.hibernate.tool.hbm2ddl: debug
 
 spring:
+
+    ai:
+        google:
+            genai:
+                api-key: key
+                chat:
+                    options:
+                        model: model
     security:
         oauth2:
             resourceserver:

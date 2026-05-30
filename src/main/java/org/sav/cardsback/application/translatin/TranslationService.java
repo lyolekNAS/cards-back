@@ -16,9 +16,10 @@ public class TranslationService {
 	private final AzureTranslator azureTranslator;
 	private final MyMemoryTranslator myMemoryTranslator;
 	private final GoogleTranslator googleTranslator;
+	private final AITranslator aiTranslator;
 
 	public List<DictTrans> getTranslations(DictWord word){
-		return getAllTranslations(word.getWordText()).stream()
+		return getAllTranslations(word).stream()
 				.map(String::toLowerCase)
 				.map(String::trim)
 				.distinct()
@@ -31,11 +32,12 @@ public class TranslationService {
 				.toList();
 	}
 
-	private List<String> getAllTranslations(String word){
+	private List<String> getAllTranslations(DictWord word){
 		List<String> allTrans = new ArrayList<>();
-		allTrans.addAll(azureTranslator.processWord(word));
-		allTrans.addAll(myMemoryTranslator.processWord(word));
+//		allTrans.addAll(azureTranslator.processWord(word));
+//		allTrans.addAll(myMemoryTranslator.processWord(word));
 		allTrans.addAll(googleTranslator.processWord(word));
+		allTrans.addAll(aiTranslator.processWord(word));
 		return allTrans;
 	}
 }

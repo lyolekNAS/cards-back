@@ -5,6 +5,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.sav.cardsback.domain.dictionary.model.azure.AzureRequest;
 import org.sav.cardsback.domain.dictionary.model.azure.AzureResponse;
 import org.sav.cardsback.domain.dictionary.model.azure.AzureTranslation;
+import org.sav.cardsback.entity.DictWord;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 
@@ -18,7 +19,8 @@ public class AzureTranslator implements ITranslator{
 	private final RestTemplate azureRestTemplate;
 
 	@Override
-	public List<String> processWord(String word){
+	public List<String> processWord(DictWord dictWord){
+		String word = dictWord.getWordText();
 		AzureResponse ar = translate(word);
 		return ar.getTranslations().stream()
 				.map(AzureTranslation::getDisplayTarget)

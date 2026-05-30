@@ -4,6 +4,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.sav.cardsback.domain.dictionary.model.mymemory.MatchItem;
 import org.sav.cardsback.domain.dictionary.model.mymemory.MyMemoryResponse;
+import org.sav.cardsback.entity.DictWord;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
@@ -26,7 +27,8 @@ public class MyMemoryTranslator implements ITranslator {
 
 
 	@Override
-	public List<String> processWord(String word){
+	public List<String> processWord(DictWord dictWord){
+		String word = dictWord.getWordText();
 		MyMemoryResponse resp = translate(word);
 		if(resp == null){
 			return new ArrayList<>();

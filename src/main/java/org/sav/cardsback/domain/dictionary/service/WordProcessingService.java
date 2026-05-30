@@ -250,5 +250,6 @@ public class WordProcessingService {
 		dictWord.getTranslations().addAll(translationService.getTranslations(dictWord));
 
 		dictWord.addState(WordStates.MERR_WEBSTER);
+		dictWord.addState(WordStates.AI_TRANSLATED);
 	}
 }
