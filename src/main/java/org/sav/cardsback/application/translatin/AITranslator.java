@@ -45,7 +45,7 @@ public class AITranslator implements ITranslator{
 						)
 				)
 				.user(word)
-				.options(GoogleGenAiChatOptions.builder().temperature(0.1).build())
+				.options(GoogleGenAiChatOptions.builder().temperature(0D).build())
 				.call()
 				.entity(AITranslationResponse.class);
 
@@ -79,7 +79,7 @@ public class AITranslator implements ITranslator{
 					.user(word + " - " + trans)
 					.options(
 							GoogleGenAiChatOptions.builder()
-									.temperature(0.1)
+									.temperature(0D)
 									.model("gemma-4-31b-it")
 									.thinkingLevel(GoogleGenAiThinkingLevel.MINIMAL)
 									.build()
