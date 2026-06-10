@@ -31,4 +31,5 @@ public class WordDto {
 	long dictWordFreqSum;
 	int rarity;
 	List<String> examples;
+	boolean isAITranslated;
 }

@@ -10,6 +10,7 @@ import org.sav.cardsback.application.translatin.TranslationService;
 import org.sav.cardsback.domain.dictionary.model.PartOfSpeech;
 import org.sav.cardsback.domain.dictionary.model.WordStates;
 import org.sav.cardsback.domain.dictionary.model.mw.MWEntry;
+import org.sav.cardsback.domain.dictionary.repository.DictTransRepository;
 import org.sav.cardsback.domain.dictionary.repository.UserDictWordRepository;
 import org.sav.cardsback.dto.WordDto;
 import org.sav.cardsback.entity.DictTrans;
@@ -31,6 +32,7 @@ import java.util.stream.Collectors;
 public class WordProcessingService {
 
 	private final DictionaryService dictionaryService;
+	private final DictTransRepository dictTransRepository;
 	private final UserDictWordRepository userDictWordRepository;
 	private final MWClient mwClient;
 	private final FormExtractor formExtractor;
@@ -59,7 +61,7 @@ public class WordProcessingService {
 			log.debug("entries: {}", entries);
 			if (entries.isEmpty()) {
 				dictWord.addState(WordStates.FAKE);
-				dictionaryService.save(dictWord);
+				dictWord = dictionaryService.save(dictWord);
 				log.info("Word {} is FAKE!!!", dictWord.getWordText());
 				return dictWord;
 			}
@@ -88,7 +90,7 @@ public class WordProcessingService {
 
 			prepareWord(dictWord, entries);
 
-			dictionaryService.save(dictWord);
+			dictWord = dictionaryService.save(dictWord);
 
 			log.info("Processed '{}': forms={}, defs={}",
 					word, dictWord.getForms().size(), dictWord.getDefinitions().size());
@@ -102,24 +104,13 @@ public class WordProcessingService {
 		return !dictionaryService.existsByUserAndDictWord(userId, word.getId());
 	}
 
+	@Transactional(readOnly = true)
 	public WordDto dtoFromDict(DictWord dw){
-		return dw == null ? null : WordDto.builder()
-				.dictWordId(dw.getId())
-				.english(dw.getWordText())
-				.description(
-						dw.getDefinitions().stream()
-								.map(dwd -> dwd.getPartOfSpeach() + ": " + dwd.getDefinitionText())
-								.collect(Collectors.joining("\n")))
-				.ukrainian(
-						dw.getTranslations().stream()
-								.map(DictTrans::getWordText)
-								.collect(Collectors.joining(", "))
-				)
-				.dictWordFreqSum(wordMapper.sumDictWordFreq(dw))
-				.rarity(wordMapper.calcRarity(dw))
-				.examples(dw.getExamples().stream().map(DictWordExamples::getExample).toList())
-				.build();
+		if (dw == null) {
+			return null;
+		}
 
+		return wordMapper.toDto(loadDetailedWord(dw));
 	}
 
 	public void setMarkOnWord (Long wordId, String mark, Long userId){
@@ -155,11 +146,31 @@ public class WordProcessingService {
 		return dictionaryService.findWordToProcess(WordStates.WITH_EXAMPLES.getId() | WordStates.FAKE.getId(), WordStates.MERR_WEBSTER.getId());
 	}
 
+	public Optional<DictWord> findWordWithoutAiTranslations(){
+		return dictionaryService.findWordToProcess(WordStates.AI_TRANSLATED.getId() | WordStates.FAKE.getId(), WordStates.MERR_WEBSTER.getId());
+	}
+
 	public long countWordsWithoutExamples() {
 		return dictionaryService.countWordsToProcess(
 				WordStates.WITH_EXAMPLES.getId() | WordStates.FAKE.getId(),
 				WordStates.MERR_WEBSTER.getId()
 		);
+	}
+
+	@Transactional
+	public WordDto enrichWithAiTranslations(DictWord dw){
+		DictWord detailed = loadDetailedWord(dw);
+
+		List<DictTrans> translations = new ArrayList<>(translationService.getTranslations(detailed));
+		dictTransRepository.deleteByLemmaId(detailed.getId());
+		detailed.getTranslations().clear();
+		for (DictTrans translation : translations) {
+			translation.setLemma(detailed);
+		}
+		detailed.getTranslations().addAll(translations);
+
+		detailed.addState(WordStates.AI_TRANSLATED);
+		return dtoFromDict(dictionaryService.save(detailed));
 	}
 
 	public WordDto enrichWithExamples(DictWord dw){
@@ -176,8 +187,29 @@ public class WordProcessingService {
 				.collect(Collectors.toCollection(ArrayList::new));
 		dw.setExamples(dwEx);
 		dw.addState(WordStates.WITH_EXAMPLES);
-		dictionaryService.save(dw);
-		return dtoFromDict(dw);
+		return dtoFromDict(dictionaryService.save(dw));
+	}
+
+	private DictWord loadDetailedWord(DictWord dw) {
+		DictWord detailed = dw;
+		if (dw != null && dw.getId() != null) {
+			detailed = dictionaryService.findById(dw.getId()).orElse(dw);
+		}
+
+		if (detailed.getDefinitions() != null) {
+			detailed.getDefinitions().size();
+		}
+		if (detailed.getTranslations() != null) {
+			detailed.getTranslations().size();
+		}
+		if (detailed.getExamples() != null) {
+			detailed.getExamples().size();
+		}
+		if (detailed.getForms() != null) {
+			detailed.getForms().size();
+		}
+
+		return detailed;
 	}
 
 	@Transactional
@@ -206,8 +238,7 @@ public class WordProcessingService {
 				.orElseGet(() -> {
 					DictWord dw = new DictWord();
 					dw.setWordText(word);
-					dictionaryService.save(dw);
-					return dw;
+					return dictionaryService.save(dw);
 				});
 	}
 

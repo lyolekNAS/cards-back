@@ -17,8 +17,8 @@ public class DictionaryService {
 
 	private final DictionaryRepository dictionaryRepository;
 
-	public void save(DictWord dw){
-		dictionaryRepository.save(dw);
+	public DictWord save(DictWord dw){
+		return dictionaryRepository.save(dw);
 	}
 
 	public boolean existsByUserAndDictWord(Long userId, Long wordId){
@@ -29,6 +29,10 @@ public class DictionaryService {
 		return dictionaryRepository.findWordToProcess(forbidden, required);
 	}
 
+	public Optional<DictWord> findById(Long id){
+		return dictionaryRepository.findById(id);
+	}
+
 	public long countWordsToProcess(int forbidden, int required){
 		return dictionaryRepository.countWordsToProcess(forbidden, required);
 	}
@@ -37,11 +41,9 @@ public class DictionaryService {
 		return dictionaryRepository.findByWordText(word);
 	}
 
-	public DictWord findById(Long id){
-		return dictionaryRepository.findById(id).orElse(new DictWord());
-	}
-
 	public List<String> getExamples(Long id){
-		return findById(id).getExamples().stream().map(DictWordExamples::getExample).toList();
+		return findById(id)
+				.map(dw -> dw.getExamples().stream().map(DictWordExamples::getExample).toList())
+				.orElseGet(List::of);
 	}
 }

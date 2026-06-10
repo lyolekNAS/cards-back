@@ -20,8 +20,8 @@ public class TranslationService {
 
 	public List<DictTrans> getTranslations(DictWord word){
 		return getAllTranslations(word).stream()
-				.map(String::toLowerCase)
-				.map(String::trim)
+				.map(s -> s == null ? "" : s.trim().toLowerCase())
+				.filter(s -> !s.isBlank())
 				.distinct()
 				.map(s -> {
 					DictTrans dt = new DictTrans();
