@@ -15,7 +15,8 @@ public enum PartOfSpeech {
 	CONJUNCTION("conj", "Conjunction"),
 	INTERJECTION("intj", "Interjection"),
 	ARTICLE("art", "Article"),
-	AUXILIARY("aux", "Auxiliary-verb");
+	AUXILIARY("aux", "Auxiliary-verb"),
+	PHRASE("phrase", "Phrase");
 
 	private final String code;
 	private final String displayName;
