@@ -13,7 +13,7 @@ import java.time.ZoneId;
 import java.time.ZonedDateTime;
 
 @Component
-//@Profile("prod")
+@Profile("prod")
 @RequiredArgsConstructor
 @Slf4j
 public class AiTranslationMiner {

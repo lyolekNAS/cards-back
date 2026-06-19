@@ -48,7 +48,7 @@ public class WordProcessingService {
 		int cnt = 0;
 		while (cnt++ < 2) {
 			DictWord dictWord = getDictWord(word);
-			if (dictWord.hasState(WordStates.MERR_WEBSTER)) {
+			if (dictWord.hasState(WordStates.MERR_WEBSTER) || dictWord.hasState(WordStates.FAKE)) {
 				log.debug("{} already processed", word);
 				return dictWord;
 			}

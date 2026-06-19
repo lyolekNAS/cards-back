@@ -10,6 +10,7 @@ import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestTemplate;
 import org.springframework.web.util.UriComponentsBuilder;
 
+import java.net.URI;
 import java.util.List;
 
 @Component
@@ -27,10 +28,12 @@ public class MWClient {
 	public List<MWEntry> fetchWord(String word) {
 		log.debug("fetchWord: {}", word);
 
-		String url = UriComponentsBuilder.fromHttpUrl(baseURL)
+		URI url = UriComponentsBuilder.fromHttpUrl(baseURL)
 				.pathSegment(word)
 				.queryParam("key", apiKey)
-				.toUriString();
+				.build()
+				.encode()
+				.toUri();
 
 		try {
 			String json = restTemplate.getForObject(url, String.class);
