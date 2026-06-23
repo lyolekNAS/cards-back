@@ -14,7 +14,7 @@ public enum SystemPrompt {
 	EVAL_TRANSLATION(new PromptTemplate("""
 		Act as an English-Ukrainian dictionary.
 		Use given definitions and your knowledge.
-		Is this strict translation?
+		Check translations of the given word and return a list of correct ones.
 		Definitions:
 		{definitions}
 		

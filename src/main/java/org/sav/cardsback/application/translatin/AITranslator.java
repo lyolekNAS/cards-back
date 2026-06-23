@@ -51,7 +51,7 @@ public class AITranslator implements ITranslator{
 
 
 		List<String> evaluatedTrans = new ArrayList<>();
-		record EvaluationResponse(boolean answer) {}
+		record EvaluationResponse(List<String> evaluatedTranslation) {}
 
 		BeanOutputConverter<EvaluationResponse> converter =
 				new BeanOutputConverter<>(EvaluationResponse.class);
@@ -66,57 +66,46 @@ public class AITranslator implements ITranslator{
 			return new AITranslationResponse(word, List.of());
 		}
 
-		for (String trans : candidates) {
-			ChatResponse response = geminiChatClient.prompt()
-					.system(SystemPrompt.EVAL_TRANSLATION.prompt()
-							.render(
-									Map.of(
-											"format", format,
-											"definitions", def
-									)
-							)
-					)
-					.user(word + " - " + trans)
-					.options(
-							GoogleGenAiChatOptions.builder()
-									.temperature(0D)
-									.model("gemma-4-31b-it")
-									.thinkingLevel(GoogleGenAiThinkingLevel.MINIMAL)
-									.build()
-					)
-					.call()
-					.chatResponse();
+		ChatResponse response = geminiChatClient.prompt()
+				.system(SystemPrompt.EVAL_TRANSLATION.prompt()
+						.render(
+								Map.of(
+										"format", format,
+										"definitions", def
+								)
+						)
+				)
+				.user("word - " + word + "\n\nCandidates:\n" + String.join("\n", candidates))
+				.options(
+						GoogleGenAiChatOptions.builder()
+								.temperature(0D)
+								.model("gemma-4-31b-it")
+								.thinkingLevel(GoogleGenAiThinkingLevel.MINIMAL)
+								.build()
+				)
+				.call()
+				.chatResponse();
 
-			String json = null;
-			if (response == null || response.getResults().isEmpty()) {
-				log.warn("No results from chat response for word='{}', candidate translation='{}'. Skipping evaluation.", word, trans);
-			} else {
-				json = response.getResults().stream()
-						.map(g -> g.getOutput().getText())
-						.filter(text -> text != null && !text.isBlank())
-						.reduce((a, b) -> b)
-						.orElse(null);
-
-				if (json == null) {
-					log.warn("No non-blank text found in chat results for word='{}', candidate='{}'. Skipping.", word, trans);
-				}
-			}
-
-			if (json == null) {
-				// skip this translation candidate if we couldn't obtain a JSON payload
-				continue;
-			}
-
-			try {
-				EvaluationResponse eval = converter.convert(json);
-				if (eval.answer()) {
-					evaluatedTrans.add(trans);
-				}
-			} catch (Exception ex) {
-				log.error("Failed to convert evaluation response JSON for word='{}', candidate='{}'. Error: {}", word, trans, ex.getMessage(), ex);
-				// continue with next candidate rather than failing the whole translation flow
-			}
+		String json = null;
+		if (response == null || response.getResults().isEmpty()) {
+			log.warn("No results from chat response for word='{}', candidates='{}'. Skipping evaluation.", word, String.join(", ", candidates));
+		} else {
+			json = response.getResults().stream()
+					.map(g -> g.getOutput().getText())
+					.filter(text -> text != null && !text.isBlank())
+					.reduce((a, b) -> b)
+					.orElse(null);
 		}
+
+		try {
+			if (json != null) {
+				EvaluationResponse evals = converter.convert(json);
+				evaluatedTrans.addAll(evals.evaluatedTranslation());
+			}
+		} catch (Exception ex) {
+			log.error("Failed to convert evaluation response JSON for word='{}', candidates='{}'. Error: {}", word, String.join(", ", candidates), ex.getMessage(), ex);
+		}
+
 		log.info("transOptions before evaluation: {}", transOptions);
 
 		return new AITranslationResponse(word, evaluatedTrans);
