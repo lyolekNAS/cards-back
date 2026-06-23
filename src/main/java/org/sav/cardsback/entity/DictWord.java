@@ -32,6 +32,7 @@ public class DictWord {
 	private List<DictWordDefinition> definitions = new ArrayList<>();
 
 	@OneToMany(mappedBy = "lemma", cascade = CascadeType.ALL)
+	@OrderBy("id ASC")
 	@JsonIgnoreProperties("lemma")
 	private List<DictTrans> translations = new ArrayList<>();
 
