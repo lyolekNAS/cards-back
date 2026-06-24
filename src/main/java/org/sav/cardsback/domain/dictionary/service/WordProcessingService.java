@@ -173,6 +173,15 @@ public class WordProcessingService {
 		return dtoFromDict(dictionaryService.save(detailed));
 	}
 
+	@Transactional
+	public WordDto enrichWithAiTranslations(String word){
+		Optional<DictWord> dw = dictionaryService.findByWordText(word);
+		if(dw.isPresent() && dw.get().hasNoState(WordStates.AI_TRANSLATED)) {
+			return enrichWithAiTranslations(dw.get());
+		}
+		return null;
+	}
+
 	public WordDto enrichWithExamples(DictWord dw){
 		List<String> examples = openAIRequester.getExamples(dw.getWordText());
 		if(examples.isEmpty())
@@ -227,7 +236,6 @@ public class WordProcessingService {
 	public WordDto enrichWithExamples(String word){
 		Optional<DictWord> dw = dictionaryService.findByWordText(word);
 		if(dw.isPresent() && dw.get().hasNoState(WordStates.WITH_EXAMPLES)) {
-			log.debug("dw: {}", dw.get());
 			return enrichWithExamples(dw.get());
 		}
 		return null;

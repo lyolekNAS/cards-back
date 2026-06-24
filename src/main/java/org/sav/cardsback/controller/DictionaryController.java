@@ -8,6 +8,7 @@ import org.sav.cardsback.domain.dictionary.service.WordProcessingService;
 import org.sav.cardsback.dto.WordDto;
 import org.sav.cardsback.entity.DictWord;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.web.bind.annotation.*;
@@ -54,5 +55,11 @@ public class DictionaryController {
 	@PostMapping("/enrichWithExamples")
 	public ResponseEntity<WordDto> enrichWithExamples(@RequestParam String word){
 		return ResponseEntity.ok(wordProcessingService.enrichWithExamples(word));
+	}
+
+	@PreAuthorize("hasRole('CARDS_ADMIN')")
+	@GetMapping("/enrichWithAiTranslations")
+	public ResponseEntity<WordDto> enrichWithAiTranslations(@RequestParam String word){
+		return ResponseEntity.ok(wordProcessingService.enrichWithAiTranslations(word));
 	}
 }
