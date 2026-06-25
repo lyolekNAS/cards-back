@@ -9,6 +9,8 @@ public enum SystemPrompt {
 		Consider given definitions and based on them and your knowledge give several diverse translation options from English to Ukrainian.
 		Definitions:
 		{definitions}
+		
+		{format}
 		""")
 	),
 	EVAL_TRANSLATION(new PromptTemplate("""

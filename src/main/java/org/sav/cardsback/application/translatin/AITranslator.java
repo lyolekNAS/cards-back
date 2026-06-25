@@ -38,44 +38,20 @@ public class AITranslator implements ITranslator{
 				.map(dwd -> dwd.getPartOfSpeach() + ": " + dwd.getDefinitionText())
 				.collect(Collectors.joining("\n"));
 
-		AITranslationResponse transOptions = geminiChatClient.prompt()
+		BeanOutputConverter<AITranslationResponse> transConverter =
+				new BeanOutputConverter<>(AITranslationResponse.class);
+		String transFormat = transConverter.getFormat();
+
+		ChatResponse transResponse = geminiChatClient.prompt()
 				.system(
 						SystemPrompt.TRANSLATION.prompt().render(
-								Map.of("definitions", def)
-						)
-				)
-				.user(word)
-				.options(GoogleGenAiChatOptions.builder().temperature(0D).build())
-				.call()
-				.entity(AITranslationResponse.class);
-
-
-		List<String> evaluatedTrans = new ArrayList<>();
-		record EvaluationResponse(List<String> evaluatedTranslation) {}
-
-		BeanOutputConverter<EvaluationResponse> converter =
-				new BeanOutputConverter<>(EvaluationResponse.class);
-		String format = converter.getFormat();
-
-		List<String> candidates = transOptions == null || transOptions.translations() == null
-				? List.of()
-				: transOptions.translations();
-
-		if (candidates.isEmpty()) {
-			log.warn("No translation candidates returned for word='{}'. Returning empty list.", word);
-			return new AITranslationResponse(word, List.of());
-		}
-
-		ChatResponse response = geminiChatClient.prompt()
-				.system(SystemPrompt.EVAL_TRANSLATION.prompt()
-						.render(
 								Map.of(
-										"format", format,
+										"format", transFormat,
 										"definitions", def
 								)
 						)
 				)
-				.user("word - " + word + "\n\nCandidates:\n" + String.join("\n", candidates))
+				.user(word)
 				.options(
 						GoogleGenAiChatOptions.builder()
 								.temperature(0D)
@@ -86,11 +62,64 @@ public class AITranslator implements ITranslator{
 				.call()
 				.chatResponse();
 
-		String json = null;
-		if (response == null || response.getResults().isEmpty()) {
+
+		String transJson = null;
+		if (transResponse == null || transResponse.getResults().isEmpty()) {
+			log.warn("No results from chat response for word='{}'. Skipping evaluation.", word);
+		} else {
+			transJson = transResponse.getResults().stream()
+					.map(g -> g.getOutput().getText())
+					.filter(text -> text != null && !text.isBlank())
+					.reduce((a, b) -> b)
+					.orElse(null);
+		}
+
+		AITranslationResponse transOptions = transConverter.convert(transJson);
+
+
+
+
+		List<String> evaluatedTrans = new ArrayList<>();
+		record EvaluationResponse(List<String> evaluatedTranslation) {}
+
+		BeanOutputConverter<EvaluationResponse> evalConverter =
+				new BeanOutputConverter<>(EvaluationResponse.class);
+		String evalFormat = evalConverter.getFormat();
+
+		List<String> candidates = transOptions == null || transOptions.translations() == null
+				? List.of()
+				: transOptions.translations();
+
+		if (candidates.isEmpty()) {
+			log.warn("No translation candidates returned for word='{}'. Returning empty list.", word);
+			return new AITranslationResponse(word, List.of());
+		}
+
+		ChatResponse evalResponse = geminiChatClient.prompt()
+				.system(SystemPrompt.EVAL_TRANSLATION.prompt()
+						.render(
+								Map.of(
+										"format", evalFormat,
+										"definitions", def
+								)
+						)
+				)
+				.user("word - " + word + "\n\nCandidates:\n" + String.join("\n", candidates))
+				.options(
+						GoogleGenAiChatOptions.builder()
+								.temperature(0D)
+								.model("gemma-4-26b-a4b-it")
+								.thinkingLevel(GoogleGenAiThinkingLevel.MINIMAL)
+								.build()
+				)
+				.call()
+				.chatResponse();
+
+		String evalJson = null;
+		if (evalResponse == null || evalResponse.getResults().isEmpty()) {
 			log.warn("No results from chat response for word='{}', candidates='{}'. Skipping evaluation.", word, String.join(", ", candidates));
 		} else {
-			json = response.getResults().stream()
+			evalJson = evalResponse.getResults().stream()
 					.map(g -> g.getOutput().getText())
 					.filter(text -> text != null && !text.isBlank())
 					.reduce((a, b) -> b)
@@ -98,8 +127,8 @@ public class AITranslator implements ITranslator{
 		}
 
 		try {
-			if (json != null) {
-				EvaluationResponse evals = converter.convert(json);
+			if (evalJson != null) {
+				EvaluationResponse evals = evalConverter.convert(evalJson);
 				evaluatedTrans.addAll(evals.evaluatedTranslation());
 			}
 		} catch (Exception ex) {
