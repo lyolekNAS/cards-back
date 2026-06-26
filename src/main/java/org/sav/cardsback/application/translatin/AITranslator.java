@@ -56,7 +56,8 @@ public class AITranslator implements ITranslator{
 						GoogleGenAiChatOptions.builder()
 								.temperature(0D)
 								.model("gemma-4-31b-it")
-								.thinkingLevel(GoogleGenAiThinkingLevel.MINIMAL)
+								.thinkingLevel(GoogleGenAiThinkingLevel.HIGH)
+								.responseMimeType("application/json")
 								.build()
 				)
 				.call()
@@ -75,8 +76,6 @@ public class AITranslator implements ITranslator{
 		}
 
 		AITranslationResponse transOptions = transConverter.convert(transJson);
-
-
 
 
 		List<String> evaluatedTrans = new ArrayList<>();
