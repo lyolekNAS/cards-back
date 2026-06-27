@@ -6,6 +6,7 @@ import org.sav.cardsback.dto.google.TranslationResponse;
 import org.sav.cardsback.entity.DictWord;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
+import org.springframework.web.util.HtmlUtils;
 
 import java.util.List;
 
@@ -23,10 +24,14 @@ public class GoogleTranslator implements ITranslator{
 
 	private String translate(String w){
 		TranslationResponse resp = gTranslateRestTemplate.postForObject("/v2?target=uk&source=en&q=" + w, null, TranslationResponse.class);
-		if(resp != null){
-			return resp.getData().getTranslations().getFirst().getTranslatedText();
-		} else {
+		if(resp == null){
 			return "";
 		}
+		String translated = resp
+				.getData()
+				.getTranslations()
+				.getFirst()
+				.getTranslatedText();
+		return HtmlUtils.htmlUnescape(translated);
 	}
 }
