@@ -6,20 +6,21 @@ import java.util.Map;
 import java.util.stream.Collectors;
 
 public enum PartOfSpeech {
-	NOUN("n", "Noun"),
-	VERB("v", "Verb"),
-	ADJECTIVE("adj", "Adjective"),
-	ADVERB("adv", "Adverb"),
-	PRONOUN("pron", "Pronoun"),
-	PREPOSITION("prep", "Preposition"),
-	CONJUNCTION("conj", "Conjunction"),
-	INTERJECTION("intj", "Interjection"),
-	ARTICLE("art", "Article"),
-	AUXILIARY("aux", "Auxiliary-verb"),
-	PHRASE("phrase", "Phrase");
+	NOUN("n", "Noun", true),
+	VERB("v", "Verb", true),
+	ADJECTIVE("adj", "Adjective", true),
+	ADVERB("adv", "Adverb", true),
+	PRONOUN("pron", "Pronoun", true),
+	PREPOSITION("prep", "Preposition", true),
+	CONJUNCTION("conj", "Conjunction", true),
+	INTERJECTION("intj", "Interjection", true),
+	ARTICLE("art", "Article", true),
+	AUXILIARY("aux", "Auxiliary-verb", true),
+	PHRASE("phrase", "Phrase", false);
 
 	private final String code;
 	private final String displayName;
+	private final boolean includeToWordnik;
 
 	private static final Map<String, PartOfSpeech> CODE_LOOKUP;
 	private static final Map<String, PartOfSpeech> NAME_LOOKUP;
@@ -32,9 +33,10 @@ public enum PartOfSpeech {
 				.collect(Collectors.toMap(p -> p.displayName.toLowerCase(Locale.ROOT), p -> p));
 	}
 
-	PartOfSpeech(String code, String displayName) {
+	PartOfSpeech(String code, String displayName, boolean includeToWordnik) {
 		this.code = code;
 		this.displayName = displayName;
+		this.includeToWordnik = includeToWordnik;
 	}
 
 	public static boolean isValid(String name) {
@@ -45,6 +47,7 @@ public enum PartOfSpeech {
 
 	public static String getAllDisplayNamesLowercase() {
 		return Arrays.stream(values())
+				.filter(p -> p.includeToWordnik)
 				.map(p -> p.displayName.toLowerCase(Locale.ROOT))
 				.collect(Collectors.joining(","));
 	}
