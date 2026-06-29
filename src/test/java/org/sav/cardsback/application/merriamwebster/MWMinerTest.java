@@ -34,6 +34,8 @@ class MWMinerTest {
 	@BeforeEach
 	void setUp() {
 		mwMiner = new MWMiner(scheduler, wordProcessingService);
+		// Initialize baseDelay field for testing (normally injected by @Value)
+		ReflectionTestUtils.setField(mwMiner, "baseDelay", 1000L);
 	}
 
 	@Test
