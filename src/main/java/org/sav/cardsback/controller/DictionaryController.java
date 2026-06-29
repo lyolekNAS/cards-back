@@ -52,6 +52,12 @@ public class DictionaryController {
 		wordProcessingService.setMarkOnWord(wordId, mark, jwt.getClaim("userId"));
 	}
 
+	@PreAuthorize("hasRole('CARDS_ADMIN')")
+	@PostMapping("/reset")
+	public void resetWord(@RequestParam Long wordId){
+		wordProcessingService.resetWord(wordId);
+	}
+
 	@PostMapping("/enrichWithExamples")
 	public ResponseEntity<WordDto> enrichWithExamples(@RequestParam String word){
 		return ResponseEntity.ok(wordProcessingService.enrichWithExamples(word));

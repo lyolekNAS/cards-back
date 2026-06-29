@@ -25,6 +25,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.*;
 import java.util.stream.Collectors;
+import jakarta.persistence.EntityManager;
 
 @Service
 @RequiredArgsConstructor
@@ -42,6 +43,7 @@ public class WordProcessingService {
 	private final LemmaResolverService lemmaResolverService;
 	private final WordMapper wordMapper;
 	private final OpenAIRequester openAIRequester;
+	private final EntityManager entityManager;
 
 	@Transactional
 	public DictWord processWord(String word) {
@@ -111,6 +113,33 @@ public class WordProcessingService {
 		}
 
 		return wordMapper.toDto(loadDetailedWord(dw));
+	}
+
+	@Transactional
+	public void resetWord(Long wordId){
+		// Delete definitions linked to this lemma
+		entityManager.createQuery("delete from DictWordDefinition d where d.lemma.id = :id")
+				.setParameter("id", wordId)
+				.executeUpdate();
+
+		// Delete examples linked to this lemma
+		entityManager.createQuery("delete from DictWordExamples e where e.lemma.id = :id")
+				.setParameter("id", wordId)
+				.executeUpdate();
+
+		// Delete translations (uses repository which has @Modifying query)
+		dictTransRepository.deleteByLemmaId(wordId);
+
+		// Detach forms: set lemma to null
+		entityManager.createQuery("update DictWordForm f set f.lemma = null where f.lemma.id = :id")
+				.setParameter("id", wordId)
+				.executeUpdate();
+
+		// Reset state of the word to 0
+		dictionaryService.findById(wordId).ifPresent(dw -> {
+			dw.setState(0);
+			dictionaryService.save(dw);
+		});
 	}
 
 	public void setMarkOnWord (Long wordId, String mark, Long userId){
