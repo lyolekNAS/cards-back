@@ -58,6 +58,7 @@ app-props:
     google:
         api-key: none
         translate-url: none
+    mv-delay: 700_000
 
 trans-azure-key: key
 mymemory_email: key

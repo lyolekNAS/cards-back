@@ -5,6 +5,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.sav.cardsback.domain.dictionary.service.WordProcessingService;
 import org.sav.cardsback.entity.DictWord;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Profile;
 import org.springframework.scheduling.TaskScheduler;
 import org.springframework.stereotype.Component;
@@ -21,13 +22,17 @@ public class MWMiner {
 	private final TaskScheduler scheduler;
 	private final WordProcessingService service;
 
+
+	@Value("${app-props.mv-delay}")
+	private Long baseDelay;
+
 	@PostConstruct
 	public void start() {
 		scheduleNext();
 	}
 
 	private void scheduleNext() {
-		long delay = ThreadLocalRandom.current().nextLong(900_000);
+		long delay = ThreadLocalRandom.current().nextLong(baseDelay);
 
 		scheduler.schedule(this::run, Instant.now().plusMillis(delay));
 	}
