@@ -219,14 +219,13 @@ class WordServiceTest {
 
         when(wordRepository.findByIdAndUserId(1L, userId)).thenReturn(testWord);
         when(stateLimitService.findById(testWord.getState().getId())).thenReturn(stateLimit);
-        when(wordRepository.save(any(Word.class))).thenReturn(testWord);
 
         boolean result = wordService.processTrainedWord(dto, userId);
 
         assertTrue(result);
         assertEquals(6, testWord.getEnglishCnt());
         assertNotNull(testWord.getLastTrain());
-        verify(wordRepository).save(testWord);
+        verify(wordRepository, never()).save(any());
     }
 
     @Test
@@ -238,14 +237,13 @@ class WordServiceTest {
 
         when(wordRepository.findByIdAndUserId(1L, userId)).thenReturn(testWord);
         when(stateLimitService.findById(testWord.getState().getId())).thenReturn(stateLimit);
-        when(wordRepository.save(any(Word.class))).thenReturn(testWord);
 
         boolean result = wordService.processTrainedWord(dto, userId);
 
         assertTrue(result);
         assertEquals(4, testWord.getUkrainianCnt());
         assertNotNull(testWord.getLastTrain());
-        verify(wordRepository).save(testWord);
+        verify(wordRepository, never()).save(any());
     }
 
     @Test
@@ -256,7 +254,6 @@ class WordServiceTest {
         dto.setSuccess(false);
 
         when(wordRepository.findByIdAndUserId(1L, userId)).thenReturn(testWord);
-        when(wordRepository.save(any(Word.class))).thenReturn(testWord);
 
         boolean result = wordService.processTrainedWord(dto, userId);
 
@@ -265,7 +262,7 @@ class WordServiceTest {
         assertEquals(0, testWord.getUkrainianCnt());
         assertEquals(WordStateDto.STAGE_1.getId(), testWord.getState().getId());
         assertNotNull(testWord.getLastTrain());
-        verify(wordRepository).save(testWord);
+        verify(wordRepository, never()).save(any());
     }
 
     @Test
@@ -294,7 +291,6 @@ class WordServiceTest {
 
         when(wordRepository.findByIdAndUserId(1L, userId)).thenReturn(testWord);
         when(stateLimitService.findById(testWord.getState().getId())).thenReturn(stateLimit);
-        when(wordRepository.save(any(Word.class))).thenReturn(testWord);
 
         wordService.processTrainedWord(dto, userId);
 
@@ -302,7 +298,7 @@ class WordServiceTest {
         assertEquals(0, testWord.getEnglishCnt());
         assertEquals(0, testWord.getUkrainianCnt());
         assertNotNull(testWord.getNextTrain());
-        verify(wordRepository).save(testWord);
+        verify(wordRepository, never()).save(any());
     }
 
     @Test
@@ -318,7 +314,6 @@ class WordServiceTest {
 
         when(wordRepository.findByIdAndUserId(1L, userId)).thenReturn(testWord);
         when(stateLimitService.findById(testWord.getState().getId())).thenReturn(stateLimit);
-        when(wordRepository.save(any(Word.class))).thenReturn(testWord);
 
         wordService.processTrainedWord(dto, userId);
 
@@ -326,7 +321,7 @@ class WordServiceTest {
         assertEquals(0, testWord.getEnglishCnt());
         assertEquals(0, testWord.getUkrainianCnt());
         assertNotNull(testWord.getNextTrain());
-        verify(wordRepository).save(testWord);
+        verify(wordRepository, never()).save(any());
     }
 
     @Test

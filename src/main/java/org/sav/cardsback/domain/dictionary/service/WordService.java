@@ -106,9 +106,7 @@ public class WordService {
 		} else {
 			handleFailure(word);
 		}
-
 		word.setLastTrain(OffsetDateTime.now());
-		wordRepository.save(word);
 		return true;
 	}
 
