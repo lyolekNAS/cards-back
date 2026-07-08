@@ -13,13 +13,11 @@ import java.util.List;
 @Slf4j
 @RequiredArgsConstructor
 public class TranslationService {
-	private final AzureTranslator azureTranslator;
-	private final MyMemoryTranslator myMemoryTranslator;
-	private final GoogleTranslator googleTranslator;
-	private final AITranslator aiTranslator;
+//	private final AzureTranslator azureTranslator;
+//	private final MyMemoryTranslator myMemoryTranslator;
 
-	public List<DictTrans> getTranslations(DictWord word){
-		return getAllTranslations(word).stream()
+	public List<DictTrans> getTranslations(DictWord word, ITranslator translator){
+		return translator.processWord(word).stream()
 				.map(s -> s == null ? "" : s.trim().toLowerCase())
 				.filter(s -> !s.isBlank())
 				.distinct()
@@ -32,12 +30,12 @@ public class TranslationService {
 				.toList();
 	}
 
-	private List<String> getAllTranslations(DictWord word){
-		List<String> allTrans = new ArrayList<>();
-//		allTrans.addAll(azureTranslator.processWord(word));
-//		allTrans.addAll(myMemoryTranslator.processWord(word));
-		allTrans.addAll(googleTranslator.processWord(word));
-		allTrans.addAll(aiTranslator.processWord(word));
-		return allTrans;
-	}
+//	private List<String> getAllTranslations(DictWord word){
+//		List<String> allTrans = new ArrayList<>();
+////		allTrans.addAll(azureTranslator.processWord(word));
+////		allTrans.addAll(myMemoryTranslator.processWord(word));
+//		allTrans.addAll(googleTranslator.processWord(word));
+//		allTrans.addAll(aiTranslator.processWord(word));
+//		return allTrans;
+//	}
 }

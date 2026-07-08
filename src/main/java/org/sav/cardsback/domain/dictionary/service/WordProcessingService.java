@@ -6,6 +6,8 @@ import org.sav.cardsback.application.ai.OpenAIRequester;
 import org.sav.cardsback.application.dictionary.DefinitionExtractor;
 import org.sav.cardsback.application.dictionary.FormExtractor;
 import org.sav.cardsback.application.dictionary.SynonymExtractorService;
+import org.sav.cardsback.application.translatin.AITranslator;
+import org.sav.cardsback.application.translatin.GoogleTranslator;
 import org.sav.cardsback.application.translatin.TranslationService;
 import org.sav.cardsback.domain.dictionary.model.PartOfSpeech;
 import org.sav.cardsback.domain.dictionary.model.WordStates;
@@ -44,6 +46,8 @@ public class WordProcessingService {
 	private final WordMapper wordMapper;
 	private final OpenAIRequester openAIRequester;
 	private final EntityManager entityManager;
+	private final GoogleTranslator googleTranslator;
+	private final AITranslator aiTranslator;
 
 	@Transactional
 	public DictWord processWord(String word) {
@@ -190,8 +194,12 @@ public class WordProcessingService {
 	public WordDto enrichWithAiTranslations(DictWord dw){
 		DictWord detailed = loadDetailedWord(dw);
 
-		List<DictTrans> translations = new ArrayList<>(translationService.getTranslations(detailed));
-		dictTransRepository.deleteByLemmaId(detailed.getId());
+		List<DictTrans> translations = new ArrayList<>(detailed.getTranslations());
+		translations.addAll(
+				translationService.getTranslations(detailed, aiTranslator).stream()
+						.filter(dt -> translations.stream().filter(dtt -> dtt.getWordText().equals(dt.getWordText())).count() ==0)
+						.toList()
+		);
 		detailed.getTranslations().clear();
 		for (DictTrans translation : translations) {
 			translation.setLemma(detailed);
@@ -315,9 +323,9 @@ public class WordProcessingService {
 		dictWord.setForms(formExtractor.createForms(stems, dictWord));
 		synonymExtractorService.saveSynonyms(syns);
 		dictWord.getDefinitions().addAll(definitionExtractor.createDefinitions(dictWord, defs));
-		dictWord.getTranslations().addAll(translationService.getTranslations(dictWord));
+		dictWord.getTranslations().addAll(translationService.getTranslations(dictWord, googleTranslator));
 
 		dictWord.addState(WordStates.MERR_WEBSTER);
-		dictWord.addState(WordStates.AI_TRANSLATED);
+//		dictWord.addState(WordStates.AI_TRANSLATED);
 	}
 }
