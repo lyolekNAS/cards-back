@@ -17,7 +17,7 @@ import java.time.ZonedDateTime;
 @RequiredArgsConstructor
 @Slf4j
 public class AiTranslationMiner {
-	private static final String CRON = "17 */5 * * * *";
+	private static final String CRON = "17 */2 * * * *";
 	private static final ZoneId ZONE = ZoneId.of("Europe/Kyiv");
 
 	private final TaskScheduler scheduler;
