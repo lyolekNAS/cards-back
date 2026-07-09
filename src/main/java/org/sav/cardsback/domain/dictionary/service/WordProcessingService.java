@@ -22,6 +22,7 @@ import org.sav.cardsback.entity.UserDictWord;
 import org.sav.cardsback.application.merriamwebster.MWClient;
 import org.sav.cardsback.application.merriamwebster.SynonymExtractor;
 import org.sav.cardsback.mapper.WordMapper;
+import org.sav.cardsback.utils.StringTools;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -197,7 +198,7 @@ public class WordProcessingService {
 		List<DictTrans> translations = new ArrayList<>(detailed.getTranslations());
 		translations.addAll(
 				translationService.getTranslations(detailed, aiTranslator).stream()
-						.filter(dt -> translations.stream().filter(dtt -> dtt.getWordText().equals(dt.getWordText())).count() ==0)
+						.filter(dt -> translations.stream().noneMatch(dtt -> dtt.getWordText().equals(dt.getWordText())))
 						.toList()
 		);
 		detailed.getTranslations().clear();
@@ -307,7 +308,7 @@ public class WordProcessingService {
 		for (MWEntry e : entries) {
 			if(e.getMeta().getId().split(":", 2)[0].equalsIgnoreCase(dictWord.getWordText())) {
 				if (hasSteams(e)) {
-					stems.addAll(e.getMeta().getStems());
+					stems.addAll(e.getMeta().getStems().stream().map(StringTools::normalize).toList());
 				}
 				if (hasShortDefs(e)) {
 					for (String def : e.getShortDef()) {
