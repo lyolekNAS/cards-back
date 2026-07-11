@@ -78,8 +78,8 @@ public class WordService {
 		return wordRepository.findWordToTrain(userId, PageRequest.of(0, 1)).stream().findFirst().orElse(null);
 	}
 
-	public List<Long> getWordsForRetro(Long userId) {
-		return wordRepository.getWordsForRetro(userId);
+	public List<String> getWordsForRetro(Long userId) {
+		return wordRepository.getWordsForRetro(userId, PageRequest.of(0, 200));
 	}
 
 	public StatisticDto getStatistics(Long userId) {

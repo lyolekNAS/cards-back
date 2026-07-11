@@ -83,6 +83,12 @@ public class WordController {
 	public ResponseEntity<WordDto> findWord(@AuthenticationPrincipal Jwt jwt, @RequestParam("w") String w){
 		log.debug(">>>>>> findWord {} for user {}", w, jwt.getClaim(CLAIM_USER_ID).toString());
 		WordDto wordDto = wordService.findByUserIdAndEnglish(jwt.getClaim(CLAIM_USER_ID), w);
+		wordDto.setExamples(dictionaryService.getExamples(wordDto.getDictWordId()));
+		if (ThreadLocalRandom.current().nextInt(2) > 0) {
+			wordDto.setLang(WordLangDto.EN);
+		} else {
+			wordDto.setLang(WordLangDto.UA);
+		}
 		log.debug(">>>>>> wordDto={}", wordDto);
 		return ResponseEntity.ok(wordDto);
 	}
@@ -133,9 +139,9 @@ public class WordController {
 	}
 
 	@GetMapping("/retro")
-	public ResponseEntity<List<Long>> getWordsForRetro(@AuthenticationPrincipal Jwt jwt){
+	public ResponseEntity<List<String>> getWordsForRetro(@AuthenticationPrincipal Jwt jwt){
 		log.debug(">>>>>> findWordForRetro for user {}", jwt.getClaim(CLAIM_USER_ID).toString());
-		List<Long> words = wordService.getWordsForRetro(jwt.getClaim(CLAIM_USER_ID));
+		List<String> words = wordService.getWordsForRetro(jwt.getClaim(CLAIM_USER_ID));
 		if(words == null){
 			return ResponseEntity.ok().build();
 		}
