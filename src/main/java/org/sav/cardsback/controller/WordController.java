@@ -93,6 +93,14 @@ public class WordController {
 		return ResponseEntity.ok(wordDto);
 	}
 
+	@GetMapping("/find-card")
+	public ResponseEntity<WordDto> findWordCard(@RequestParam("w") String w){
+		log.debug(">>>>>> findWordCard {}", w);
+		WordDto wordDto = wordService.getWordFromDict(w);
+		log.debug(">>>>>> wordDto={}", wordDto);
+		return ResponseEntity.ok(wordDto);
+	}
+
 	@GetMapping("/{id}")
 	@Operation(operationId = "getWordById")
 	public ResponseEntity<WordDto> getById(@AuthenticationPrincipal Jwt jwt, @PathVariable Long id){

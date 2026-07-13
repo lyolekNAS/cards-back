@@ -171,7 +171,7 @@ public class WordService {
 		word.setUkrainianCnt(0);
 	}
 
-	private WordDto getWordFromDict(String word){
+	public WordDto getWordFromDict(String word){
 		DictWord dw = wordProcessingService.processWord(word);
 		return wordProcessingService.dtoFromDict(dw);
 	}
