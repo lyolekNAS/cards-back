@@ -7,7 +7,6 @@ import org.owasp.html.PolicyFactory;
 import org.owasp.html.Sanitizers;
 import org.sav.cardsback.domain.dictionary.service.DictionaryService;
 import org.sav.cardsback.dto.*;
-import org.sav.cardsback.entity.DictWordExamples;
 import org.sav.cardsback.entity.Word;
 import org.sav.cardsback.mapper.WordMapper;
 import org.sav.cardsback.domain.dictionary.service.WordService;
@@ -32,8 +31,7 @@ public class WordController {
 	private final WordMapper wordMapper;
 	private final DictionaryService dictionaryService;
 	private static final String CLAIM_USER_ID = "userId";
-
-	PolicyFactory policy = Sanitizers.FORMATTING.and(Sanitizers.LINKS);
+	private static final PolicyFactory POLICY = Sanitizers.FORMATTING.and(Sanitizers.LINKS);
 
 
 	@GetMapping("/all")
@@ -49,30 +47,21 @@ public class WordController {
 			@RequestParam(defaultValue = "") String state,
 			@AuthenticationPrincipal Jwt jwt) {
 
-		log.debug(">>>>>> getAllByUser for {}", jwt.getClaim(CLAIM_USER_ID).toString());
+		Long userId = getUserId(jwt);
+		log.debug(">>>>>> getAllByUser for {}", userId);
 
 		Pageable pageable = PageRequest.of(page, size, Sort.by("id").ascending());
-		Page<Word> words = wordService.findAllByUserId(jwt.getClaim(CLAIM_USER_ID), state, pageable);
-		WordsPageDto<WordDto> dto = new WordsPageDto<>(
-				words.getContent().stream().map(wordMapper::toDto).toList(),
-				words.getNumber(),
-				words.getSize(),
-				words.getTotalElements(),
-				words.getTotalPages(),
-				words.isFirst(),
-				words.isLast()
-		);
-
-		return ResponseEntity.ok(dto);
+		return ResponseEntity.ok(toWordsPageDto(wordService.findAllByUserId(userId, state, pageable)));
 	}
 
 	//ToDo: додати перевірку на власність слова
 	@PostMapping("/save")
 	public ResponseEntity<WordDto> addWord(@AuthenticationPrincipal Jwt jwt, @RequestBody WordDto wordDto) {
+		Long userId = getUserId(jwt);
 		log.debug(">>>>>> addWord({})", wordDto);
-		wordDto.setDescription(policy.sanitize(wordDto.getDescription()));
+		wordDto.setDescription(POLICY.sanitize(wordDto.getDescription()));
 		Word word = wordMapper.toEntity(wordDto);
-		word.setUserId(jwt.getClaim(CLAIM_USER_ID));
+		word.setUserId(userId);
 		log.debug(">>>>>> word {}", word);
 		Word saved = wordService.save(word);
 		log.debug(">>>>>> saved {}", saved);
@@ -81,14 +70,9 @@ public class WordController {
 
 	@GetMapping("/find")
 	public ResponseEntity<WordDto> findWord(@AuthenticationPrincipal Jwt jwt, @RequestParam("w") String w){
-		log.debug(">>>>>> findWord {} for user {}", w, jwt.getClaim(CLAIM_USER_ID).toString());
-		WordDto wordDto = wordService.findByUserIdAndEnglish(jwt.getClaim(CLAIM_USER_ID), w);
-		wordDto.setExamples(dictionaryService.getExamples(wordDto.getDictWordId()));
-		if (ThreadLocalRandom.current().nextInt(2) > 0) {
-			wordDto.setLang(WordLangDto.EN);
-		} else {
-			wordDto.setLang(WordLangDto.UA);
-		}
+		Long userId = getUserId(jwt);
+		log.debug(">>>>>> findWord {} for user {}", w, userId);
+		WordDto wordDto = enrichWordDto(wordService.findByUserIdAndEnglish(userId, w), true);
 		log.debug(">>>>>> wordDto={}", wordDto);
 		return ResponseEntity.ok(wordDto);
 	}
@@ -104,52 +88,45 @@ public class WordController {
 	@GetMapping("/{id}")
 	@Operation(operationId = "getWordById")
 	public ResponseEntity<WordDto> getById(@AuthenticationPrincipal Jwt jwt, @PathVariable Long id){
-		log.debug(">>>>>> getById {} for user {}", id, jwt.getClaim(CLAIM_USER_ID).toString());
-		Word word = wordService.findByIdAndUserId(id, jwt.getClaim(CLAIM_USER_ID));
+		Long userId = getUserId(jwt);
+		log.debug(">>>>>> getById {} for user {}", id, userId);
+		Word word = wordService.findByIdAndUserId(id, userId);
 		if(word == null){
 			return ResponseEntity.ok().build();
 		}
-		WordDto wordDto = wordMapper.toDto(word);
-		wordDto.setExamples(dictionaryService.getExamples(wordDto.getDictWordId()));
-		if (ThreadLocalRandom.current().nextInt(2) > 0) {
-			wordDto.setLang(WordLangDto.EN);
-		} else {
-			wordDto.setLang(WordLangDto.UA);
-		}
+		WordDto wordDto = enrichWordDto(wordMapper.toDto(word), true);
 		log.debug(">>>>>> getById={}", wordDto);
-		return ResponseEntity.ok( wordDto);
+		return ResponseEntity.ok(wordDto);
 	}
 
 	@DeleteMapping("/delete")
 	public ResponseEntity<String> deleteWord(@AuthenticationPrincipal Jwt jwt, @RequestParam("id") Long id){
-		log.debug(">>>>>> deleteWord {} for user {}", id, jwt.getClaim(CLAIM_USER_ID).toString());
-		Word word = wordService.findByIdAndUserId(id, jwt.getClaim(CLAIM_USER_ID));
+		Long userId = getUserId(jwt);
+		log.debug(">>>>>> deleteWord {} for user {}", id, userId);
+		Word word = wordService.findByIdAndUserId(id, userId);
 		wordService.delete(word);
 		return ResponseEntity.ok("deleted");
 	}
 
 	@GetMapping("/train")
 	public ResponseEntity<WordDto> findWordToTrain(@AuthenticationPrincipal Jwt jwt){
-		log.debug(">>>>>> findWordToTrain for user {}", jwt.getClaim(CLAIM_USER_ID).toString());
-		Word word = wordService.findWordToTrain(jwt.getClaim(CLAIM_USER_ID));
+		Long userId = getUserId(jwt);
+		log.debug(">>>>>> findWordToTrain for user {}", userId);
+		Word word = wordService.findWordToTrain(userId);
 		if(word == null){
 			return ResponseEntity.ok().build();
 		}
-		WordDto wordDto = wordMapper.toDto(word);
-		wordDto.setExamples(dictionaryService.getExamples(wordDto.getDictWordId()));
-		if (word.getEnglishCnt() < word.getUkrainianCnt()) {
-			wordDto.setLang(WordLangDto.EN);
-		} else {
-			wordDto.setLang(WordLangDto.UA);
-		}
+		WordDto wordDto = enrichWordDto(wordMapper.toDto(word), false);
+		wordDto.setLang(selectTrainingLang(word));
 		log.debug(">>>>>> found word {}", wordDto);
 		return ResponseEntity.ok(wordDto);
 	}
 
 	@GetMapping("/retro")
 	public ResponseEntity<List<String>> getWordsForRetro(@AuthenticationPrincipal Jwt jwt){
-		log.debug(">>>>>> findWordForRetro for user {}", jwt.getClaim(CLAIM_USER_ID).toString());
-		List<String> words = wordService.getWordsForRetro(jwt.getClaim(CLAIM_USER_ID));
+		Long userId = getUserId(jwt);
+		log.debug(">>>>>> findWordForRetro for user {}", userId);
+		List<String> words = wordService.getWordsForRetro(userId);
 		if(words == null){
 			return ResponseEntity.ok().build();
 		}
@@ -159,20 +136,52 @@ public class WordController {
 
 	@GetMapping("/statistic")
 	public ResponseEntity<StatisticDto> getStatistic(@AuthenticationPrincipal Jwt jwt){
-		log.debug(">>>>>> getStatistic for user {}", jwt.getClaim(CLAIM_USER_ID).toString());
-		return ResponseEntity.ok(wordService.getStatistics(jwt.getClaim(CLAIM_USER_ID)));
+		Long userId = getUserId(jwt);
+		log.debug(">>>>>> getStatistic for user {}", userId);
+		return ResponseEntity.ok(wordService.getStatistics(userId));
 	}
 
 	@PostMapping("/trained")
 	public ResponseEntity<String> processTrainedWord(@AuthenticationPrincipal Jwt jwt, @RequestBody TrainedWordDto trainedWordDto){
-		log.debug(">>>>>> processTrainedWord for user {}", jwt.getClaim(CLAIM_USER_ID).toString());
+		Long userId = getUserId(jwt);
+		log.debug(">>>>>> processTrainedWord for user {}", userId);
 		log.debug(">>>>>> trainedWord {}", trainedWordDto);
-		boolean resp = wordService.processTrainedWord(trainedWordDto, jwt.getClaim(CLAIM_USER_ID));
+		boolean resp = wordService.processTrainedWord(trainedWordDto, userId);
 		return resp ? ResponseEntity.ok("trained") : ResponseEntity.badRequest().body("error");
 	}
 
 	@PostMapping("/pick5Paused")
 	public int pickRandom5FromPause(@AuthenticationPrincipal Jwt jwt){
-		return wordService.pickRandom5FromPause(jwt.getClaim(CLAIM_USER_ID));
+		return wordService.pickRandom5FromPause(getUserId(jwt));
+	}
+
+	private Long getUserId(Jwt jwt) {
+		return jwt.getClaim(CLAIM_USER_ID);
+	}
+
+	private WordDto enrichWordDto(WordDto wordDto, boolean randomLang) {
+		wordDto.setExamples(dictionaryService.getExamples(wordDto.getDictWordId()));
+		wordDto.setLang(randomLang ? randomLang() : null);
+		return wordDto;
+	}
+
+	private WordLangDto randomLang() {
+		return ThreadLocalRandom.current().nextBoolean() ? WordLangDto.EN : WordLangDto.UA;
+	}
+
+	private WordLangDto selectTrainingLang(Word word) {
+		return word.getEnglishCnt() < word.getUkrainianCnt() ? WordLangDto.EN : WordLangDto.UA;
+	}
+
+	private WordsPageDto<WordDto> toWordsPageDto(Page<Word> words) {
+		return new WordsPageDto<>(
+				words.getContent().stream().map(wordMapper::toDto).toList(),
+				words.getNumber(),
+				words.getSize(),
+				words.getTotalElements(),
+				words.getTotalPages(),
+				words.isFirst(),
+				words.isLast()
+		);
 	}
 }
