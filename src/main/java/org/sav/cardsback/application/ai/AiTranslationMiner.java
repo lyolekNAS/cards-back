@@ -41,7 +41,10 @@ public class AiTranslationMiner {
 			log.debug(">>>> Starting AiTranslationMiner");
 			wordProcessingService.findWordWithoutAiTranslations()
 					.ifPresentOrElse(
-							wordProcessingService::enrichWithAiTranslations,
+							w -> {
+								log.debug(">>>> AiTranslationMiner: {}", w.getWordText());
+								wordProcessingService.enrichWithAiTranslations(w);
+							},
 							() -> log.debug(">>>> AiTranslationMiner on the rest")
 					);
 		} finally {
