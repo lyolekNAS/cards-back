@@ -13,12 +13,11 @@ import org.sav.cardsback.domain.dictionary.model.PartOfSpeech;
 import org.sav.cardsback.domain.dictionary.model.WordStates;
 import org.sav.cardsback.domain.dictionary.model.mw.MWEntry;
 import org.sav.cardsback.domain.dictionary.repository.DictTransRepository;
+import org.sav.cardsback.domain.dictionary.repository.DictWordFormRepository;
+import org.sav.cardsback.domain.dictionary.repository.DictionaryRepository;
 import org.sav.cardsback.domain.dictionary.repository.UserDictWordRepository;
 import org.sav.cardsback.dto.WordDto;
-import org.sav.cardsback.entity.DictTrans;
-import org.sav.cardsback.entity.DictWord;
-import org.sav.cardsback.entity.DictWordExamples;
-import org.sav.cardsback.entity.UserDictWord;
+import org.sav.cardsback.entity.*;
 import org.sav.cardsback.application.merriamwebster.MWClient;
 import org.sav.cardsback.application.merriamwebster.SynonymExtractor;
 import org.sav.cardsback.mapper.WordMapper;
@@ -38,6 +37,8 @@ public class WordProcessingService {
 	private final DictionaryService dictionaryService;
 	private final DictTransRepository dictTransRepository;
 	private final UserDictWordRepository userDictWordRepository;
+	private final DictWordFormRepository dictWordFormRepository;
+	private final DictionaryRepository wordRepository;
 	private final MWClient mwClient;
 	private final FormExtractor formExtractor;
 	private final DefinitionExtractor definitionExtractor;
@@ -52,6 +53,7 @@ public class WordProcessingService {
 
 	@Transactional
 	public DictWord processWord(String word) {
+		String originWord = word;
 		int cnt = 0;
 		while (cnt++ < 2) {
 			DictWord dictWord = getDictWord(word);
@@ -90,6 +92,21 @@ public class WordProcessingService {
 				dictWord = getDictWord(word);
 				if (dictWord.hasState(WordStates.MERR_WEBSTER)) {
 					log.debug("{} already processed as lemma {}", word, dictWord.getWordText());
+					if(dictWord.getForms().stream().noneMatch(f -> f.getWordText().equals(originWord))) {
+						log.debug("adding lemma {}", originWord);
+						DictWordForm originForm = dictWordFormRepository.findByWordText(originWord)
+								.orElseGet(() -> {
+									DictWordForm dwf = new DictWordForm();
+									dwf.setWordText(originWord);
+									return  dwf;
+								});
+						originForm.setLemma(dictWord);
+
+						log.info("new form: {} for {} with {}", originForm.getWordText(), originForm.getLemma().getWordText(), originForm.getFreq());
+
+						dictWord.getForms().add(originForm);
+					}
+					wordRepository.deleteByWordText(originWord);
 					return dictWord;
 				}
 				continue;

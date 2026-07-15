@@ -9,7 +9,6 @@ COPY .mvn/ .mvn/
 
 RUN --mount=type=bind,source=pom.xml,target=pom.xml \
     --mount=type=cache,target=/root/.m2  \
-    --mount=type=secret,id=github_token \
     ./mvnw -s .mvn/settings.xml dependency:go-offline -DskipTests
 
 
@@ -23,7 +22,6 @@ WORKDIR /build
 COPY ./src src/
 RUN --mount=type=bind,source=pom.xml,target=pom.xml \
     --mount=type=cache,target=/root/.m2 \
-    --mount=type=secret,id=github_token \
     ./mvnw -s .mvn/settings.xml clean package -DskipTests && \
     mv target/$(./mvnw help:evaluate -Dexpression=project.artifactId -q -DforceStdout)-$(./mvnw help:evaluate -Dexpression=project.version -q -DforceStdout).jar \
     target/app.jar
