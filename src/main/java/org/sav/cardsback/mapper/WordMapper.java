@@ -4,6 +4,7 @@ import org.mapstruct.Mapper;
 import org.mapstruct.BeanMapping;
 import org.mapstruct.Mapping;
 import org.sav.cardsback.domain.dictionary.model.WordStates;
+import org.sav.cardsback.dto.LevelBounds;
 import org.sav.cardsback.dto.WordDto;
 import org.sav.cardsback.entity.DictWord;
 import org.sav.cardsback.entity.DictTrans;
@@ -80,10 +81,10 @@ public interface WordMapper {
 	default int calcRarity(DictWord dictWord) {
 		long f = sumDictWordFreq(dictWord);
 
-		if (f > 27_200_000) return 1;
-		if (f > 7_300_000) return 2;
-		if (f > 2_400_000)  return 3;
-		if (f > 800_000)  return 4;
+		if (f > LevelBounds.FIRST.getBound()) return 1;
+		if (f > LevelBounds.SECOND.getBound()) return 2;
+		if (f > LevelBounds.THIRD.getBound())  return 3;
+		if (f > LevelBounds.FOURTH.getBound())  return 4;
 		return 5;
 	}
 

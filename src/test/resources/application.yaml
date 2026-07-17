@@ -59,6 +59,12 @@ app-props:
         api-key: none
         translate-url: none
     mv-delay: 700_000
+    level-bounds:
+        first: 27_200_000
+        second: 7_300_000
+        third: 2_400_000
+        fourth: 800_000
+        fifth: 0
 
 trans-azure-key: key
 mymemory_email: key
