@@ -53,6 +53,36 @@ public interface DictionaryRepository extends JpaRepository<DictWord, Long> {
 	}
 
 	@Query("""
+        SELECT dw
+            FROM DictWord dw
+            JOIN dw.forms dwf
+            WHERE bitand(dw.state, 16) = 16
+                AND NOT EXISTS (
+                    SELECT 1
+                        FROM Word w
+                        WHERE w.userId = :userId
+                            AND w.dictWord.id = dw.id
+                )
+                AND NOT EXISTS (
+                    SELECT 1
+                        FROM UserDictWord udw
+                        WHERE udw.userId = :userId
+                            AND udw.lemma.id = dw.id
+                )
+            GROUP BY dw.id, dw.wordText, dw.state
+            HAVING SUM(dwf.freq) < :highBound
+                AND SUM(dwf.freq) >= :lowBound
+            ORDER BY function('RAND')
+        """)
+	List<DictWord> findWordToSuggestInternal(@Param("lowBound") long lowBound, @Param("highBound") long highBound, @Param("userId") long userId, Pageable pageable);
+
+	default Optional<DictWord> findWordToSuggest(long lowBound, long highBound, long userId) {
+		return findWordToSuggestInternal(lowBound, highBound, userId, PageRequest.of(0, 1))
+				.stream()
+				.findFirst();
+	}
+
+	@Query("""
         SELECT COUNT(dw)
             FROM DictWord dw
             WHERE bitand(dw.state, cast(:forbidden as integer)) = 0

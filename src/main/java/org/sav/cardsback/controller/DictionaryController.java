@@ -4,6 +4,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.sav.cardsback.application.wordnik.WordnikRandomWordImporter;
 import org.sav.cardsback.domain.dictionary.model.WordStates;
+import org.sav.cardsback.domain.dictionary.service.DictionaryService;
 import org.sav.cardsback.domain.dictionary.service.WordProcessingService;
 import org.sav.cardsback.dto.WordDto;
 import org.sav.cardsback.entity.DictWord;
@@ -24,6 +25,7 @@ public class DictionaryController {
 
 	private final WordnikRandomWordImporter wordnikRandomWordImporter;
 	private final WordProcessingService wordProcessingService;
+	private final DictionaryService dictionaryService;
 
 	@GetMapping("/getNewWords")
 	public ResponseEntity<List<WordDto>> getNewWords(@AuthenticationPrincipal Jwt jwt){
@@ -38,6 +40,14 @@ public class DictionaryController {
 			dw = wordProcessingService.findUnprocessedWord().orElseThrow();
 			dw = wordProcessingService.processWord(dw.getWordText());
 		}
+		return ResponseEntity.ok(wordProcessingService.dtoFromDict(dw));
+	}
+
+	@GetMapping(value = {"/findWordToSuggest", "/findWordToSuggest/{level}"})
+	public ResponseEntity<WordDto> findWordToSuggest(@PathVariable(required = false) Integer level, @AuthenticationPrincipal Jwt jwt){
+		log.debug("findWordToSuggest level {}", level);
+		level = level == null ? 1 : level;
+		DictWord dw = dictionaryService.findWordToSuggest(level, jwt.getClaim("userId")).orElse(null);
 		return ResponseEntity.ok(wordProcessingService.dtoFromDict(dw));
 	}
 

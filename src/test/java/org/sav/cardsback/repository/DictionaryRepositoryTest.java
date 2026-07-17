@@ -10,6 +10,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
 import org.springframework.boot.test.autoconfigure.orm.jpa.TestEntityManager;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -127,10 +129,66 @@ class DictionaryRepositoryTest {
 		assertEquals(2L, count);
 	}
 
+	@Test
+	void findWordToSuggest_returnsEligibleWordAndHonorsUserExclusions() {
+		DictWord eligible = createAndPersistDictWordWithForms("eligible", 16, 30_000_000L);
+		DictWord excludedByUserWord = createAndPersistDictWordWithForms("excluded-word", 16, 30_000_000L);
+		DictWord excludedByDictWord = createAndPersistDictWordWithForms("excluded-dictword", 16, 30_000_000L);
+		DictWord lowFreq = createAndPersistDictWordWithForms("too-small", 16, 10L);
+
+		UserDictWord udw = new UserDictWord();
+		udw.setUserId(77L);
+		udw.setLemma(excludedByUserWord);
+		entityManager.persistAndFlush(udw);
+
+		Word word = new Word();
+		word.setEnglish("excluded");
+		word.setUkrainian("виключено");
+		word.setUserId(77L);
+		word.setDictWord(excludedByDictWord);
+		word.setEnglishCnt(0);
+		word.setUkrainianCnt(0);
+		word.setState(createAndPersistWordState(1));
+		entityManager.persistAndFlush(word);
+
+		entityManager.flush();
+		entityManager.clear();
+
+		Optional<DictWord> result = dictionaryRepository.findWordToSuggest(
+				27_200_000L,
+				Long.MAX_VALUE,
+				77L
+		);
+
+		assertTrue(result.isPresent());
+		assertEquals(eligible.getId(), result.get().getId());
+		assertNotEquals(excludedByUserWord.getId(), result.get().getId());
+		assertNotEquals(excludedByDictWord.getId(), result.get().getId());
+		assertNotEquals(lowFreq.getId(), result.get().getId());
+	}
+
 	private DictWord createAndPersistDictWord(String wordText, int state) {
 		DictWord dw = new DictWord();
 		dw.setWordText(wordText);
 		dw.setState(state);
+		return entityManager.persistAndFlush(dw);
+	}
+
+	private DictWord createAndPersistDictWordWithForms(String wordText, int state, long... freqs) {
+		DictWord dw = new DictWord();
+		dw.setWordText(wordText);
+		dw.setState(state);
+
+		List<org.sav.cardsback.entity.DictWordForm> forms = new ArrayList<>();
+		for (int i = 0; i < freqs.length; i++) {
+			org.sav.cardsback.entity.DictWordForm form = new org.sav.cardsback.entity.DictWordForm();
+			form.setWordText(wordText + "-" + i);
+			form.setFreq(freqs[i]);
+			form.setLemma(dw);
+			forms.add(form);
+		}
+		dw.setForms(forms);
+
 		return entityManager.persistAndFlush(dw);
 	}
 
