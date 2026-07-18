@@ -141,6 +141,13 @@ public class WordController {
 		return ResponseEntity.ok(wordService.getStatistics(userId));
 	}
 
+	@GetMapping("/dict-statistic")
+	public ResponseEntity<List<StatisticDictionaryDto>> getDictStatistic(@AuthenticationPrincipal Jwt jwt){
+		Long userId = getUserId(jwt);
+		log.debug(">>>>>> getDictStatistic for user {}", userId);
+		return ResponseEntity.ok(wordService.getDoctStatistics(userId));
+	}
+
 	@PostMapping("/trained")
 	public ResponseEntity<String> processTrainedWord(@AuthenticationPrincipal Jwt jwt, @RequestBody TrainedWordDto trainedWordDto){
 		Long userId = getUserId(jwt);

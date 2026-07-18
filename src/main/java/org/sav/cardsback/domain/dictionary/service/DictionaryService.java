@@ -4,6 +4,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.sav.cardsback.domain.dictionary.repository.DictionaryRepository;
 import org.sav.cardsback.dto.LevelBounds;
+import org.sav.cardsback.dto.LevelBoundsDto;
 import org.sav.cardsback.entity.DictWord;
 import org.sav.cardsback.entity.DictWordExamples;
 import org.springframework.stereotype.Service;
@@ -49,9 +50,12 @@ public class DictionaryService {
 	}
 
 	public Optional<DictWord> findWordToSuggest(int level, long userId){
-		int normalizedLevel = Math.max(1, Math.min(level, 5));
-		long lowBound = LevelBounds.getBounds(normalizedLevel).getBound();
-		long highBound = LevelBounds.getBounds(normalizedLevel - 1).getBound();
-		return dictionaryRepository.findWordToSuggest(lowBound, highBound, userId);
+		LevelBoundsDto lb = getLevelBounds(level);
+		return dictionaryRepository.findWordToSuggest(lb.lowBound(), lb.highBound(), userId);
+	}
+
+	public LevelBoundsDto getLevelBounds(int level) {
+		int normalizedLevel = Math.clamp(level, 1, 5);
+		return new LevelBoundsDto(normalizedLevel, LevelBounds.getBounds(normalizedLevel).getBound(), LevelBounds.getBounds(normalizedLevel - 1).getBound());
 	}
 }

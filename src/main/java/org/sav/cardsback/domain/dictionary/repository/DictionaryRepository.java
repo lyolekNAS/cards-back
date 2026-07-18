@@ -76,6 +76,8 @@ public interface DictionaryRepository extends JpaRepository<DictWord, Long> {
         """)
 	List<DictWord> findWordToSuggestInternal(@Param("lowBound") long lowBound, @Param("highBound") long highBound, @Param("userId") long userId, Pageable pageable);
 
+
+
 	default Optional<DictWord> findWordToSuggest(long lowBound, long highBound, long userId) {
 		return findWordToSuggestInternal(lowBound, highBound, userId, PageRequest.of(0, 1))
 				.stream()
@@ -89,4 +91,18 @@ public interface DictionaryRepository extends JpaRepository<DictWord, Long> {
                     AND bitand(dw.state, cast(:required as integer)) = cast(:required as integer)
         """)
 	long countWordsToProcess(@Param("forbidden") Integer forbidden, @Param("required") Integer required);
+
+	@Query("""
+        SELECT cast(count(1) as integer)
+            FROM (
+                SELECT dw.wordText AS wordText, SUM(dwf.freq) AS sm
+                    FROM DictWord dw
+                    LEFT JOIN dw.forms dwf
+                    WHERE bitand(dw.state, 16) = 16
+                    GROUP BY dw.wordText
+                    HAVING SUM(dwf.freq) < :highBound
+                        AND SUM(dwf.freq) >= :lowBound
+            ) stat
+        """)
+	Integer getDictStats(@Param("lowBound") long lowBound, @Param("highBound") long highBound);
 }
