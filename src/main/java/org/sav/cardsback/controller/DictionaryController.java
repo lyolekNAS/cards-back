@@ -65,7 +65,7 @@ public class DictionaryController {
 	@PreAuthorize("hasRole('CARDS_ADMIN')")
 	@PostMapping("/reset")
 	public void resetWord(@RequestParam Long wordId){
-		wordProcessingService.resetWord(wordId);
+		dictionaryService.resetWord(wordId);
 	}
 
 	@PostMapping("/enrichWithExamples")

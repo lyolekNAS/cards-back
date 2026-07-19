@@ -35,7 +35,6 @@ import jakarta.persistence.EntityManager;
 public class WordProcessingService {
 
 	private final DictionaryService dictionaryService;
-	private final DictTransRepository dictTransRepository;
 	private final UserDictWordRepository userDictWordRepository;
 	private final DictWordFormRepository dictWordFormRepository;
 	private final DictionaryRepository wordRepository;
@@ -47,7 +46,6 @@ public class WordProcessingService {
 	private final LemmaResolverService lemmaResolverService;
 	private final WordMapper wordMapper;
 	private final OpenAIRequester openAIRequester;
-	private final EntityManager entityManager;
 	private final GoogleTranslator googleTranslator;
 	private final AITranslator aiTranslator;
 
@@ -106,6 +104,8 @@ public class WordProcessingService {
 
 						dictWord.getForms().add(originForm);
 					}
+					DictWord originDictWord = dictionaryService.findByWordText(originWord).orElseThrow(NoSuchElementException::new);
+					dictionaryService.resetWord(originDictWord.getId());
 					wordRepository.deleteByWordText(originWord);
 					return dictWord;
 				}
@@ -135,33 +135,6 @@ public class WordProcessingService {
 		}
 
 		return wordMapper.toDto(loadDetailedWord(dw));
-	}
-
-	@Transactional
-	public void resetWord(Long wordId){
-		// Delete definitions linked to this lemma
-		entityManager.createQuery("delete from DictWordDefinition d where d.lemma.id = :id")
-				.setParameter("id", wordId)
-				.executeUpdate();
-
-		// Delete examples linked to this lemma
-		entityManager.createQuery("delete from DictWordExamples e where e.lemma.id = :id")
-				.setParameter("id", wordId)
-				.executeUpdate();
-
-		// Delete translations (uses repository which has @Modifying query)
-		dictTransRepository.deleteByLemmaId(wordId);
-
-		// Detach forms: set lemma to null
-		entityManager.createQuery("update DictWordForm f set f.lemma = null where f.lemma.id = :id")
-				.setParameter("id", wordId)
-				.executeUpdate();
-
-		// Reset state of the word to 0
-		dictionaryService.findById(wordId).ifPresent(dw -> {
-			dw.setState(0);
-			dictionaryService.save(dw);
-		});
 	}
 
 	public void setMarkOnWord (Long wordId, String mark, Long userId){

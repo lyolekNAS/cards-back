@@ -4,6 +4,8 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.sav.cardsback.domain.dictionary.repository.DictWordFormRepository;
 import org.sav.cardsback.domain.dictionary.repository.DictionaryRepository;
+import org.sav.cardsback.domain.dictionary.service.DictionaryService;
+import org.sav.cardsback.domain.dictionary.service.WordProcessingService;
 import org.sav.cardsback.entity.DictWord;
 import org.sav.cardsback.entity.DictWordForm;
 import org.springframework.stereotype.Component;
@@ -11,6 +13,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.NoSuchElementException;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -21,13 +24,20 @@ public class FormExtractor {
 
 	private final DictWordFormRepository formRepository;
 	private final DictionaryRepository wordRepository;
+	private final DictionaryService dictionaryService;
 
 	@Transactional
 	public List<DictWordForm> createForms(Set<String> stems, DictWord dictWord) {
 		stems.forEach(stem -> {
 			if(!stem.equalsIgnoreCase(dictWord.getWordText())) {
-				wordRepository.deleteByWordText(stem);
-				log.debug("Deleted lemma candidate from DictWord: {}", stem);
+				log.debug("Deleting lemma candidate {}", stem);
+				dictionaryService.findByWordText(stem).ifPresent(
+						stemDictWord -> {
+							dictionaryService.resetWord(stemDictWord.getId());
+							wordRepository.deleteByWordText(stem);
+							log.debug("Deleted lemma candidate from DictWord: {}", stem);
+						}
+				);
 			}
 		});
 
