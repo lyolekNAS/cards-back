@@ -96,6 +96,8 @@ class WordServiceTest {
         testDictWordForm.setWordText("test");
         testDictWordForm.setLemma(testDictWord);
 
+        testWord.setDictWord(testDictWord);
+
     }
 
     @Test

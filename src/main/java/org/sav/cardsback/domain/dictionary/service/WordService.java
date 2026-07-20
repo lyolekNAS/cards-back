@@ -57,7 +57,9 @@ public class WordService {
 		}
 	}
 
+	@Transactional
 	public Word save(Word word) {
+		userDictWordRepository.deleteByUserIdAndLemma_Id(word.getUserId(), word.getDictWord().getId());
 		return wordRepository.save(word);
 	}
 
