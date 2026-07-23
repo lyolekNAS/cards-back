@@ -7,6 +7,7 @@ import org.sav.cardsback.domain.dictionary.repository.DictionaryRepository;
 import org.sav.cardsback.domain.dictionary.repository.UserDictWordRepository;
 import org.sav.cardsback.dto.*;
 import org.sav.cardsback.entity.DictWord;
+import org.sav.cardsback.entity.UserDictWord;
 import org.sav.cardsback.entity.Word;
 import org.sav.cardsback.entity.WordState;
 import org.sav.cardsback.mapper.WordMapper;
@@ -73,6 +74,10 @@ public class WordService {
 			wordDto = wordMapper.toDto(word.get());
 		} else {
 			wordDto = getWordFromDict(english);
+			userDictWordRepository.findByUserIdAndLemma_Id(userId, wordDto.getDictWordId()).ifPresent(udw -> {
+				wordDto.setKnown(udw.isKnown());
+				wordDto.setUninteresting(udw.isUninteresting());
+			});
 		}
 		return wordDto;
 	}

@@ -32,4 +32,6 @@ public class WordDto {
 	int rarity;
 	List<String> examples;
 	boolean isAITranslated;
+	boolean isKnown;
+	boolean isUninteresting;
 }
