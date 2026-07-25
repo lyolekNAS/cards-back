@@ -12,7 +12,6 @@ import org.sav.cardsback.application.translatin.TranslationService;
 import org.sav.cardsback.domain.dictionary.model.PartOfSpeech;
 import org.sav.cardsback.domain.dictionary.model.WordStates;
 import org.sav.cardsback.domain.dictionary.model.mw.MWEntry;
-import org.sav.cardsback.domain.dictionary.repository.DictTransRepository;
 import org.sav.cardsback.domain.dictionary.repository.DictWordFormRepository;
 import org.sav.cardsback.domain.dictionary.repository.DictionaryRepository;
 import org.sav.cardsback.domain.dictionary.repository.UserDictWordRepository;
@@ -27,12 +26,13 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.*;
 import java.util.stream.Collectors;
-import jakarta.persistence.EntityManager;
 
 @Service
 @RequiredArgsConstructor
 @Slf4j
 public class WordProcessingService {
+
+	private static final int MAX_PROCESSING_ATTEMPTS = 2;
 
 	private final DictionaryService dictionaryService;
 	private final UserDictWordRepository userDictWordRepository;
@@ -51,77 +51,93 @@ public class WordProcessingService {
 
 	@Transactional
 	public DictWord processWord(String word) {
-		String originWord = word;
-		int cnt = 0;
-		while (cnt++ < 2) {
-			DictWord dictWord = getDictWord(word);
+		String currentWord = word;
+		int attempt = 0;
+		while (attempt++ < MAX_PROCESSING_ATTEMPTS) {
+			DictWord dictWord = getDictWord(currentWord);
 			if (dictWord.hasState(WordStates.MERR_WEBSTER) || dictWord.hasState(WordStates.FAKE)) {
-				log.debug("{} already processed", word);
+				log.debug("{} already processed", currentWord);
 				return dictWord;
 			}
 
-			String queryWord = word;
-			List<MWEntry> entries = mwClient.fetchWord(word).stream()
-					.filter(e -> queryWord.equalsIgnoreCase(e.getMeta().getId().split(":", 2)[0]) || e.getMeta().getStems().contains(queryWord))
-					.filter(e -> PartOfSpeech.isValid(e.getFl()))
-					.toList();
-			log.debug("entries: {}", entries);
+			List<MWEntry> entries = fetchValidEntries(currentWord);
 			if (entries.isEmpty()) {
-				dictWord.addState(WordStates.FAKE);
-				dictWord = dictionaryService.save(dictWord);
-				log.info("Word {} is FAKE!!!", dictWord.getWordText());
-				return dictWord;
+				return markAsFake(dictWord);
 			}
 
-			String mostFrequent = entries.stream()
-					.map(e -> e.getMeta().getId())
-					.collect(Collectors.groupingBy(s -> s, LinkedHashMap::new, Collectors.counting()))
-					.entrySet()
-					.stream()
-					.max(Map.Entry.comparingByValue())
-					.map(Map.Entry::getKey)
-					.orElse(entries.getFirst().getMeta().getId())
-					.split(":", 2)[0];
-			log.debug("mostFrequent: {}", mostFrequent);
+			String mostFrequentLemma = determineMostFrequentLemma(entries);
 
-			if (!mostFrequent.equalsIgnoreCase(word)) {
-				word = mostFrequent;
-				log.debug("changing word for: {}", word);
-				dictWord = getDictWord(word);
+			if (!mostFrequentLemma.equalsIgnoreCase(currentWord)) {
+				currentWord = mostFrequentLemma;
+				log.debug("changing word for: {}", currentWord);
+				dictWord = getDictWord(currentWord);
 				if (dictWord.hasState(WordStates.MERR_WEBSTER)) {
-					log.debug("{} already processed as lemma {}", word, dictWord.getWordText());
-					if(dictWord.getForms().stream().noneMatch(f -> f.getWordText().equals(originWord))) {
-						log.debug("adding lemma {}", originWord);
-						DictWordForm originForm = dictWordFormRepository.findByWordText(originWord)
-								.orElseGet(() -> {
-									DictWordForm dwf = new DictWordForm();
-									dwf.setWordText(originWord);
-									return  dwf;
-								});
-						originForm.setLemma(dictWord);
-
-						log.info("new form: {} for {} with {}", originForm.getWordText(), originForm.getLemma().getWordText(), originForm.getFreq());
-
-						dictWord.getForms().add(originForm);
-					}
-					DictWord originDictWord = dictionaryService.findByWordText(originWord).orElseThrow(NoSuchElementException::new);
-					dictionaryService.resetWord(originDictWord.getId());
-					wordRepository.deleteByWordText(originWord);
+					handleExistingLemma(dictWord, word);
 					return dictWord;
 				}
 				continue;
 			}
 
 			prepareWord(dictWord, entries);
-
 			dictWord = dictionaryService.save(dictWord);
 
 			log.info("Processed '{}': forms={}, defs={}",
-					word, dictWord.getForms().size(), dictWord.getDefinitions().size());
+					currentWord, dictWord.getForms().size(), dictWord.getDefinitions().size());
 			return dictWord;
 		}
 		log.info(">>>>>>>>>>>>>>>>>>>>>ATTENTION<<<<<<<<<<<<<<<<<<<<<<<<<<");
 		return null;
+	}
+
+	private List<MWEntry> fetchValidEntries(String word) {
+		List<MWEntry> entries = mwClient.fetchWord(word).stream()
+				.filter(e -> word.equalsIgnoreCase(e.getMeta().getId().split(":", 2)[0]) || e.getMeta().getStems().contains(word))
+				.filter(e -> PartOfSpeech.isValid(e.getFl()))
+				.toList();
+		log.debug("entries: {}", entries);
+		return entries;
+	}
+
+	private DictWord markAsFake(DictWord dictWord) {
+		dictWord.addState(WordStates.FAKE);
+		DictWord saved = dictionaryService.save(dictWord);
+		log.info("Word {} is FAKE!!!", saved.getWordText());
+		return saved;
+	}
+
+	private String determineMostFrequentLemma(List<MWEntry> entries) {
+		String mostFrequent = entries.stream()
+				.map(e -> e.getMeta().getId())
+				.collect(Collectors.groupingBy(s -> s, LinkedHashMap::new, Collectors.counting()))
+				.entrySet()
+				.stream()
+				.max(Map.Entry.comparingByValue())
+				.map(Map.Entry::getKey)
+				.orElse(entries.getFirst().getMeta().getId())
+				.split(":", 2)[0];
+		log.debug("mostFrequent: {}", mostFrequent);
+		return mostFrequent;
+	}
+
+	private void handleExistingLemma(DictWord dictWord, String originWord) {
+		log.debug("{} already processed as lemma {}", originWord, dictWord.getWordText());
+		if (dictWord.getForms().stream().noneMatch(f -> f.getWordText().equals(originWord))) {
+			log.debug("adding lemma {}", originWord);
+			DictWordForm originForm = dictWordFormRepository.findByWordText(originWord)
+					.orElseGet(() -> {
+						DictWordForm dwf = new DictWordForm();
+						dwf.setWordText(originWord);
+						return dwf;
+					});
+			originForm.setLemma(dictWord);
+
+			log.info("new form: {} for {} with {}", originForm.getWordText(), originForm.getLemma().getWordText(), originForm.getFreq());
+
+			dictWord.getForms().add(originForm);
+		}
+		DictWord originDictWord = dictionaryService.findByWordText(originWord).orElseThrow(NoSuchElementException::new);
+		dictionaryService.resetWord(originDictWord.getId());
+		wordRepository.deleteByWordText(originWord);
 	}
 
 	public boolean isWordSuitable(Long userId, DictWord word){
@@ -210,6 +226,7 @@ public class WordProcessingService {
 		return null;
 	}
 
+	@Transactional
 	public WordDto enrichWithExamples(DictWord dw){
 		List<String> examples = openAIRequester.getExamples(dw.getWordText());
 		if(examples.isEmpty())
@@ -225,6 +242,27 @@ public class WordProcessingService {
 		dw.setExamples(dwEx);
 		dw.addState(WordStates.WITH_EXAMPLES);
 		return dtoFromDict(dictionaryService.save(dw));
+	}
+
+	@Transactional
+	public void enrichWithExamples(int n){
+		for (int i = 0; i < n; i++) {
+			Optional<DictWord> dw = findWordWithoutExamples();
+			if (dw.isEmpty()) {
+				break;
+			}
+			WordDto processed = enrichWithExamples(dw.get());
+			log.debug(">>>> Examples mined: {}", processed);
+		}
+	}
+
+	@Transactional
+	public WordDto enrichWithExamples(String word){
+		Optional<DictWord> dw = dictionaryService.findByWordText(word);
+		if(dw.isPresent() && dw.get().hasNoState(WordStates.WITH_EXAMPLES)) {
+			return enrichWithExamples(dw.get());
+		}
+		return null;
 	}
 
 	private DictWord loadDetailedWord(DictWord dw) {
@@ -249,26 +287,6 @@ public class WordProcessingService {
 		return detailed;
 	}
 
-	@Transactional
-	public void enrichWithExamples(int n){
-		for (int i = 0; i < n; i++) {
-			Optional<DictWord> dw = findWordWithoutExamples();
-			if (dw.isEmpty()) {
-				break;
-			}
-			WordDto processed = enrichWithExamples(dw.get());
-			log.debug(">>>> Examples mined: {}", processed);
-		}
-	}
-
-	public WordDto enrichWithExamples(String word){
-		Optional<DictWord> dw = dictionaryService.findByWordText(word);
-		if(dw.isPresent() && dw.get().hasNoState(WordStates.WITH_EXAMPLES)) {
-			return enrichWithExamples(dw.get());
-		}
-		return null;
-	}
-
 	private DictWord getDictWord(String word) {
 		return lemmaResolverService.findLemmaOrSelf(word)
 				.orElseGet(() -> {
@@ -278,19 +296,19 @@ public class WordProcessingService {
 				});
 	}
 
-
 	private boolean hasSteams(MWEntry e){
 		return e.getMeta() != null && e.getMeta().getStems() != null;
 	}
+
 	private boolean hasSyns(MWEntry e){
 		return e.getSyns() != null;
 	}
+
 	private boolean hasShortDefs(MWEntry e){
 		return e.getShortDef() != null && e.getFl() != null;
 	}
 
 	private void prepareWord(DictWord dictWord, List<MWEntry> entries){
-
 		Set<String> stems = new HashSet<>();
 		Set<String> syns = new HashSet<>();
 		List<Map.Entry<String, String>> defs = new ArrayList<>();
@@ -317,6 +335,6 @@ public class WordProcessingService {
 		dictWord.getTranslations().addAll(translationService.getTranslations(dictWord, googleTranslator));
 
 		dictWord.addState(WordStates.MERR_WEBSTER);
-//		dictWord.addState(WordStates.AI_TRANSLATED);
 	}
 }
+
