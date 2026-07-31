@@ -10,6 +10,8 @@ import org.sav.cardsback.domain.dictionary.repository.DictWordFormRepository;
 import org.sav.cardsback.domain.dictionary.repository.UserDictWordRepository;
 import org.sav.cardsback.domain.dictionary.service.StateLimitService;
 import org.sav.cardsback.domain.dictionary.service.WordService;
+import org.sav.cardsback.domain.dictionary.service.WordStatisticsService;
+import org.sav.cardsback.domain.dictionary.service.WordTrainingService;
 import org.sav.cardsback.dto.*;
 import org.sav.cardsback.entity.DictWord;
 import org.sav.cardsback.entity.DictWordForm;
@@ -44,7 +46,10 @@ class WordServiceTest {
     private UserDictWordRepository userDictWordRepository;
 
     @Mock
-    private StateLimitService stateLimitService;
+    private WordStatisticsService statisticsService;
+
+    @Mock
+    private WordTrainingService trainingService;
 
     @Mock
     private WordMapper wordMapper;
@@ -193,154 +198,43 @@ class WordServiceTest {
 
     @Test
     void findWordToTrain_ReturnsRandomWord() {
-        List<Word> words = Collections.singletonList(testWord);
-        when(wordRepository.findWordToTrain(userId, PageRequest.of(0, 1))).thenReturn(words);
+        when(trainingService.findWordToTrain(userId)).thenReturn(testWord);
 
         Word result = wordService.findWordToTrain(userId);
 
         assertEquals(testWord, result);
-        verify(wordRepository).findWordToTrain(userId, PageRequest.of(0, 1));
+        verify(trainingService).findWordToTrain(userId);
     }
 
     @Test
     void findWordToTrain_EmptyList_ReturnsNull() {
-        when(wordRepository.findWordToTrain(userId, PageRequest.of(0, 1))).thenReturn(Collections.emptyList());
+        when(trainingService.findWordToTrain(userId)).thenReturn(null);
 
         Word result = wordService.findWordToTrain(userId);
 
         assertNull(result);
-        verify(wordRepository).findWordToTrain(userId, PageRequest.of(0, 1));
+        verify(trainingService).findWordToTrain(userId);
     }
 
     @Test
-    void processTrainedWord_Success_EnglishLang_IncreasesCount() {
+    void processTrainedWord_DelegatesToTrainingService() {
         TrainedWordDto dto = new TrainedWordDto();
-        dto.setId(1L);
-        dto.setLang(WordLangDto.EN);
-        dto.setSuccess(true);
-
-        when(wordRepository.findByIdAndUserId(1L, userId)).thenReturn(testWord);
-        when(stateLimitService.findById(testWord.getState().getId())).thenReturn(stateLimit);
+        when(trainingService.processTrainedWord(dto, userId)).thenReturn(true);
 
         boolean result = wordService.processTrainedWord(dto, userId);
 
         assertTrue(result);
-        assertEquals(6, testWord.getEnglishCnt());
-        assertNotNull(testWord.getLastTrain());
-        verify(wordRepository, never()).save(any());
+        verify(trainingService).processTrainedWord(dto, userId);
     }
 
     @Test
-    void processTrainedWord_Success_UkrainianLang_IncreasesCount() {
-        TrainedWordDto dto = new TrainedWordDto();
-        dto.setId(1L);
-        dto.setLang(WordLangDto.UA);
-        dto.setSuccess(true);
-
-        when(wordRepository.findByIdAndUserId(1L, userId)).thenReturn(testWord);
-        when(stateLimitService.findById(testWord.getState().getId())).thenReturn(stateLimit);
-
-        boolean result = wordService.processTrainedWord(dto, userId);
-
-        assertTrue(result);
-        assertEquals(4, testWord.getUkrainianCnt());
-        assertNotNull(testWord.getLastTrain());
-        verify(wordRepository, never()).save(any());
-    }
-
-    @Test
-    void processTrainedWord_Failure_ResetsCountsAndState() {
-        TrainedWordDto dto = new TrainedWordDto();
-        dto.setId(1L);
-        dto.setLang(WordLangDto.EN);
-        dto.setSuccess(false);
-
-        when(wordRepository.findByIdAndUserId(1L, userId)).thenReturn(testWord);
-
-        boolean result = wordService.processTrainedWord(dto, userId);
-
-        assertTrue(result);
-        assertEquals(0, testWord.getEnglishCnt());
-        assertEquals(0, testWord.getUkrainianCnt());
-        assertEquals(WordStateDto.STAGE_1.getId(), testWord.getState().getId());
-        assertNotNull(testWord.getLastTrain());
-        verify(wordRepository, never()).save(any());
-    }
-
-    @Test
-    void processTrainedWord_WordNotFound_ReturnsFalse() {
-        TrainedWordDto dto = new TrainedWordDto();
-        dto.setId(1L);
-
-        when(wordRepository.findByIdAndUserId(1L, userId)).thenReturn(null);
-
-        boolean result = wordService.processTrainedWord(dto, userId);
-
-        assertFalse(result);
-        verify(wordRepository, never()).save(any());
-    }
-
-    @Test
-    void processTrainedWord_BothCountsReachLimit_AdvancesState() {
-        testWord.setEnglishCnt(9);
-        testWord.setUkrainianCnt(10);
-        stateLimit.setDelay(7);
-
-        TrainedWordDto dto = new TrainedWordDto();
-        dto.setId(1L);
-        dto.setLang(WordLangDto.EN);
-        dto.setSuccess(true);
-
-        when(wordRepository.findByIdAndUserId(1L, userId)).thenReturn(testWord);
-        when(stateLimitService.findById(testWord.getState().getId())).thenReturn(stateLimit);
-
-        wordService.processTrainedWord(dto, userId);
-
-        assertEquals(WordStateDto.STAGE_1.getId() + 1, testWord.getState().getId());
-        assertEquals(0, testWord.getEnglishCnt());
-        assertEquals(0, testWord.getUkrainianCnt());
-        assertNotNull(testWord.getNextTrain());
-        verify(wordRepository, never()).save(any());
-    }
-
-    @Test
-    void processTrainedWord_BothCountsReachLimit_NoDelay_SetsDoneState() {
-        testWord.setEnglishCnt(9);
-        testWord.setUkrainianCnt(10);
-        stateLimit.setDelay(0);
-
-        TrainedWordDto dto = new TrainedWordDto();
-        dto.setId(1L);
-        dto.setLang(WordLangDto.EN);
-        dto.setSuccess(true);
-
-        when(wordRepository.findByIdAndUserId(1L, userId)).thenReturn(testWord);
-        when(stateLimitService.findById(testWord.getState().getId())).thenReturn(stateLimit);
-
-        wordService.processTrainedWord(dto, userId);
-
-        assertEquals(WordStateDto.DONE.getId(), testWord.getState().getId());
-        assertEquals(0, testWord.getEnglishCnt());
-        assertEquals(0, testWord.getUkrainianCnt());
-        assertNotNull(testWord.getNextTrain());
-        verify(wordRepository, never()).save(any());
-    }
-
-    @Test
-    void getStatistics() {
-        List<StatisticAttemptDto> attemptDtos = List.of();
-        List<StatisticComonDto> commonDtos = List.of();
-        
-        when(wordRepository.getStatisticAttempt(userId)).thenReturn(attemptDtos);
-        when(wordRepository.getStatisticCommon(userId)).thenReturn(commonDtos);
+    void getStatistics_DelegatesToStatisticsService() {
+        StatisticDto stat = new StatisticDto();
+        when(statisticsService.getStatistics(userId)).thenReturn(stat);
 
         StatisticDto result = wordService.getStatistics(userId);
 
-        assertNotNull(result);
-        assertEquals(attemptDtos, result.getStatisticsAttemptDto());
-        assertEquals(commonDtos, result.getStatisticsComonDto());
-        
-        verify(wordRepository).getStatisticAttempt(userId);
-        verify(wordRepository).getStatisticCommon(userId);
+        assertEquals(stat, result);
+        verify(statisticsService).getStatistics(userId);
     }
 }
