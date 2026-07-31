@@ -253,7 +253,6 @@ public class WordProcessingService {
 		}
 		log.debug(">>>> mineExamples for {}", dw.get().getWordText());
 		WordDto processed = enrichWithExamples(dw.get());
-		log.debug(">>>> Examples mined: {}", processed);
 	}
 
 	@Transactional
