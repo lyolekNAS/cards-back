@@ -22,6 +22,13 @@ public enum SystemPrompt {
 		
 		{format}
 		""")
+	),
+	EXAMPLES(new PromptTemplate("""
+		You are a professional philologist specializing in modern English.
+		Generate exactly three natural, contemporary English example sentences for the given word, using it in different contexts.
+
+		{format}
+		""")
 	);
 
 	private final PromptTemplate systemPrompt;
