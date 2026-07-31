@@ -5,12 +5,14 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-import org.sav.cardsback.application.dictionary.ExamplesMiner;
 import org.sav.cardsback.domain.dictionary.service.WordProcessingService;
 import org.springframework.scheduling.TaskScheduler;
 import org.springframework.test.util.ReflectionTestUtils;
 
+import org.sav.cardsback.entity.DictWord;
+
 import java.time.Instant;
+import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.anyInt;
@@ -44,32 +46,10 @@ class ExamplesMinerTest {
 	}
 
 	@Test
-	void run_whenWordsWithoutExamplesLessOrEqualPacketSize_skipsEnrichAndSchedulesNext() {
-		when(wordProcessingService.countWordsWithoutExamples()).thenReturn(100L);
-
+	void run_whenExamplesMinerRuns_callsEnrichExamples() {
 		ReflectionTestUtils.invokeMethod(examplesMiner, "run");
 
-		verify(wordProcessingService).countWordsWithoutExamples();
-		verify(wordProcessingService, never()).enrichWithExamples(anyInt());
-		verify(scheduler).schedule(any(Runnable.class), any(Instant.class));
-	}
-
-	@Test
-	void run_whenWordsWithoutExamplesGreaterThanPacketSize_enrichesAndSchedulesNext() {
-		when(wordProcessingService.countWordsWithoutExamples()).thenReturn(101L);
-
-		ReflectionTestUtils.invokeMethod(examplesMiner, "run");
-
-		verify(wordProcessingService).enrichWithExamples(100);
-		verify(scheduler).schedule(any(Runnable.class), any(Instant.class));
-	}
-
-	@Test
-	void run_whenEnrichThrows_stillSchedulesNext() {
-		when(wordProcessingService.countWordsWithoutExamples()).thenReturn(101L);
-		doThrow(new RuntimeException("boom")).when(wordProcessingService).enrichWithExamples(100);
-
-		assertThrows(RuntimeException.class, () -> ReflectionTestUtils.invokeMethod(examplesMiner, "run"));
+		verify(wordProcessingService).enrichWithExamples();
 		verify(scheduler).schedule(any(Runnable.class), any(Instant.class));
 	}
 }

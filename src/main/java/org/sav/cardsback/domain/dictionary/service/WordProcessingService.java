@@ -245,15 +245,15 @@ public class WordProcessingService {
 	}
 
 	@Transactional
-	public void enrichWithExamples(int n){
-		for (int i = 0; i < n; i++) {
-			Optional<DictWord> dw = findWordWithoutExamples();
-			if (dw.isEmpty()) {
-				break;
-			}
-			WordDto processed = enrichWithExamples(dw.get());
-			log.debug(">>>> Examples mined: {}", processed);
+	public void enrichWithExamples(){
+		Optional<DictWord> dw = findWordWithoutExamples();
+		if (dw.isEmpty()) {
+			log.debug(">>>> MineExamples is resting");
+			return;
 		}
+		log.debug(">>>> mineExamples for {}", dw.get().getWordText());
+		WordDto processed = enrichWithExamples(dw.get());
+		log.debug(">>>> Examples mined: {}", processed);
 	}
 
 	@Transactional

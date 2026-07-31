@@ -18,7 +18,7 @@ import java.time.ZonedDateTime;
 @RequiredArgsConstructor
 @Slf4j
 public class ExamplesMiner {
-	private static final String CRON = "0 * 0-5,22-23 * * *";
+	private static final String CRON = "47 * * * * *";
 	private static final ZoneId ZONE = ZoneId.of("Europe/Kyiv");
 
 	private final TaskScheduler scheduler;
@@ -39,14 +39,10 @@ public class ExamplesMiner {
 
 	private void run() {
 		try {
-			int wordsPacketSize = 100;
 			log.debug(">>>> Starting mineExamples");
-			long wordsWithoutExamples = wordProcessingService.countWordsWithoutExamples();
-			if (wordsWithoutExamples <= wordsPacketSize) {
-				log.debug(">>>> Skip mineExamples, words without examples: {}", wordsWithoutExamples);
-				return;
-			}
-			wordProcessingService.enrichWithExamples(wordsPacketSize);
+			wordProcessingService.enrichWithExamples();
+		} catch (Exception e) {
+			log.error("Error during mineExamples", e);
 		} finally {
 			scheduleNext();
 		}
