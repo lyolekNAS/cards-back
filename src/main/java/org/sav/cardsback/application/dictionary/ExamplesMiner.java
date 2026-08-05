@@ -4,11 +4,11 @@ import jakarta.annotation.PostConstruct;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.sav.cardsback.domain.dictionary.service.WordProcessingService;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Profile;
 import org.springframework.scheduling.TaskScheduler;
 import org.springframework.scheduling.support.CronExpression;
 import org.springframework.stereotype.Component;
-import org.springframework.transaction.annotation.Transactional;
 
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
@@ -18,15 +18,18 @@ import java.time.ZonedDateTime;
 @RequiredArgsConstructor
 @Slf4j
 public class ExamplesMiner {
-	private static final String CRON = "*/30 * * * * *";
+
+	@Value("${app-props.cron.examples:47 * * * * *}")
+	private String CRON;
 	private static final ZoneId ZONE = ZoneId.of("Europe/Kyiv");
 
 	private final TaskScheduler scheduler;
 	private final WordProcessingService wordProcessingService;
-	private final CronExpression cronExpression = CronExpression.parse(CRON);
+	private CronExpression cronExpression;
 
 	@PostConstruct
 	public void start() {
+		this.cronExpression = CronExpression.parse(CRON);
 		scheduleNext();
 	}
 

@@ -9,18 +9,11 @@ import org.sav.cardsback.domain.dictionary.service.WordProcessingService;
 import org.springframework.scheduling.TaskScheduler;
 import org.springframework.test.util.ReflectionTestUtils;
 
-import org.sav.cardsback.entity.DictWord;
-
 import java.time.Instant;
-import java.util.Optional;
 
-import static org.junit.jupiter.api.Assertions.assertThrows;
-import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.doThrow;
-import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
 class ExamplesMinerTest {
@@ -36,13 +29,15 @@ class ExamplesMinerTest {
 	@BeforeEach
 	void setUp() {
 		examplesMiner = new ExamplesMiner(scheduler, wordProcessingService);
+		ReflectionTestUtils.setField(examplesMiner, "CRON", "47 * * * * *");
+		ReflectionTestUtils.invokeMethod(examplesMiner, "start");
 	}
 
 	@Test
 	void start_schedulesNextRun() {
 		ReflectionTestUtils.invokeMethod(examplesMiner, "start");
 
-		verify(scheduler).schedule(any(Runnable.class), any(Instant.class));
+		verify(scheduler, times(2)).schedule(any(Runnable.class), any(Instant.class));
 	}
 
 	@Test
@@ -50,6 +45,6 @@ class ExamplesMinerTest {
 		ReflectionTestUtils.invokeMethod(examplesMiner, "run");
 
 		verify(wordProcessingService).enrichWithExamples();
-		verify(scheduler).schedule(any(Runnable.class), any(Instant.class));
+		verify(scheduler, times(2)).schedule(any(Runnable.class), any(Instant.class));
 	}
 }

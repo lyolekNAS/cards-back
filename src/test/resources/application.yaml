@@ -59,6 +59,9 @@ app-props:
         api-key: none
         translate-url: none
     mv-delay: 700_000
+    cron:
+        examples: "*/30 * * * * *"
+        translations: "17 * * * * *"
     level-bounds:
         first: 27_200_000
         second: 7_300_000
