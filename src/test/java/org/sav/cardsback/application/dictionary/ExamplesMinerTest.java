@@ -7,6 +7,7 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.sav.cardsback.domain.dictionary.service.WordProcessingService;
 import org.springframework.scheduling.TaskScheduler;
+import org.springframework.scheduling.support.CronExpression;
 import org.springframework.test.util.ReflectionTestUtils;
 
 import java.time.Instant;
@@ -30,14 +31,14 @@ class ExamplesMinerTest {
 	void setUp() {
 		examplesMiner = new ExamplesMiner(scheduler, wordProcessingService);
 		ReflectionTestUtils.setField(examplesMiner, "CRON", "47 * * * * *");
-		ReflectionTestUtils.invokeMethod(examplesMiner, "start");
+		ReflectionTestUtils.setField(examplesMiner, "cronExpression", CronExpression.parse("47 * * * * *"));
 	}
 
 	@Test
 	void start_schedulesNextRun() {
 		ReflectionTestUtils.invokeMethod(examplesMiner, "start");
 
-		verify(scheduler, times(2)).schedule(any(Runnable.class), any(Instant.class));
+		verify(scheduler).schedule(any(Runnable.class), any(Instant.class));
 	}
 
 	@Test
@@ -45,6 +46,6 @@ class ExamplesMinerTest {
 		ReflectionTestUtils.invokeMethod(examplesMiner, "run");
 
 		verify(wordProcessingService).enrichWithExamples();
-		verify(scheduler, times(2)).schedule(any(Runnable.class), any(Instant.class));
+		verify(scheduler).schedule(any(Runnable.class), any(Instant.class));
 	}
 }
