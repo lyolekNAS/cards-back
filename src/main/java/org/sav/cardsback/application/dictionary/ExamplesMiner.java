@@ -18,7 +18,7 @@ import java.time.ZonedDateTime;
 @RequiredArgsConstructor
 @Slf4j
 public class ExamplesMiner {
-	private static final String CRON = "47 * * * * *";
+	private static final String CRON = "*/30 * * * * *";
 	private static final ZoneId ZONE = ZoneId.of("Europe/Kyiv");
 
 	private final TaskScheduler scheduler;
