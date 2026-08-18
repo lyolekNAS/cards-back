@@ -56,6 +56,9 @@ public class WordProcessingService {
 		while (attempt++ < MAX_PROCESSING_ATTEMPTS) {
 			DictWord dictWord = getDictWord(currentWord);
 			if (dictWord.hasState(WordStates.MERR_WEBSTER) || dictWord.hasState(WordStates.FAKE)) {
+				if(!dictWord.getWordText().equals(word)) {
+					handleExistingLemma(dictWord, word);
+				}
 				log.debug("{} already processed", currentWord);
 				return dictWord;
 			}
