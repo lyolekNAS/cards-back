@@ -5,6 +5,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.sav.cardsback.domain.dictionary.repository.DictTransRepository;
 import org.sav.cardsback.domain.dictionary.repository.DictionaryRepository;
+import org.sav.cardsback.dto.ExampleDto;
 import org.sav.cardsback.dto.LevelBounds;
 import org.sav.cardsback.dto.LevelBoundsDto;
 import org.sav.cardsback.entity.DictWord;
@@ -48,9 +49,9 @@ public class DictionaryService {
 		return dictionaryRepository.findByWordText(word);
 	}
 
-	public List<String> getExamples(Long id){
+	public List<ExampleDto> getExamples(Long id){
 		return findById(id)
-				.map(dw -> dw.getExamples().stream().map(DictWordExamples::getExample).toList())
+				.map(dw -> dw.getExamples().stream().map(example -> new ExampleDto(example.getId(), example.getExample())).toList())
 				.orElseGet(List::of);
 	}
 

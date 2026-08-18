@@ -4,6 +4,7 @@ import org.mapstruct.Mapper;
 import org.mapstruct.BeanMapping;
 import org.mapstruct.Mapping;
 import org.sav.cardsback.domain.dictionary.model.WordStates;
+import org.sav.cardsback.dto.ExampleDto;
 import org.sav.cardsback.dto.LevelBounds;
 import org.sav.cardsback.dto.WordDto;
 import org.sav.cardsback.entity.DictWord;
@@ -112,13 +113,13 @@ public interface WordMapper {
 				.collect(Collectors.joining(", "));
 	}
 
-	default List<String> mapExamples(DictWord dictWord) {
+	default List<ExampleDto> mapExamples(DictWord dictWord) {
 		if (dictWord == null || dictWord.getExamples() == null) {
 			return List.of();
 		}
 
 		return dictWord.getExamples().stream()
-				.map(DictWordExamples::getExample)
+				.map(example -> new ExampleDto(example.getId(), example.getExample()))
 				.toList();
 	}
 

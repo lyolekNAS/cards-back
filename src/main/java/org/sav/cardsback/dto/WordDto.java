@@ -30,7 +30,7 @@ public class WordDto {
 	long dictWordId;
 	long dictWordFreqSum;
 	int rarity;
-	List<String> examples;
+	List<ExampleDto> examples;
 	boolean isAITranslated;
 	boolean isKnown;
 	boolean isUninteresting;

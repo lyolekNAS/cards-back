@@ -4,6 +4,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mapstruct.factory.Mappers;
 import org.sav.cardsback.domain.dictionary.model.WordStates;
+import org.sav.cardsback.dto.ExampleDto;
 import org.sav.cardsback.dto.WordDto;
 import org.sav.cardsback.dto.WordStateDto;
 import org.sav.cardsback.entity.DictWord;
@@ -116,6 +117,7 @@ class WordMapperTest {
         dictWord.setTranslations(List.of(translation));
 
         DictWordExamples example = new DictWordExamples();
+        example.setId(1L);
         example.setExample("hello there");
         example.setLemma(dictWord);
         dictWord.setExamples(List.of(example));
@@ -129,7 +131,7 @@ class WordMapperTest {
         assertEquals("привіт", dto.getUkrainian());
         assertEquals(10L, dto.getDictWordFreqSum());
         assertEquals(5, dto.getRarity());
-        assertEquals(List.of("hello there"), dto.getExamples());
+        assertEquals(List.of(new ExampleDto(1L, "hello there")), dto.getExamples());
         assertTrue(dto.isAITranslated());
     }
 
