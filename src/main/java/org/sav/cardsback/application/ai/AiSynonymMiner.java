@@ -19,7 +19,7 @@ import java.time.ZonedDateTime;
 @Slf4j
 public class AiSynonymMiner {
 
-	@Value("${app-props.cron.translations:17 * * * * *}")
+	@Value("${app-props.cron.synonyms:27 * * * * *}")
 	private String CRON;
 	private static final ZoneId ZONE = ZoneId.of("Europe/Kyiv");
 
