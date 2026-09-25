@@ -59,7 +59,7 @@ public class OpenAIRequester {
 
 		log.debug("Response: {}", synonymsResp);
 		if (synonymsResp.synonyms().isEmpty()) {
-			throw new IllegalStateException("Empty AI response");
+			log.debug("Empty AI response for synonyms of word: {}", word);
 		}
 		return synonymsResp.synonyms();
 	}
