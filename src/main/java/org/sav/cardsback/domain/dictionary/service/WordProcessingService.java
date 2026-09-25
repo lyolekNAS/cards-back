@@ -193,11 +193,63 @@ public class WordProcessingService {
 		return dictionaryService.findWordToProcess(WordStates.AI_TRANSLATED.getId() | WordStates.FAKE.getId(), WordStates.MERR_WEBSTER.getId());
 	}
 
+	public Optional<DictWord> findWordWithoutAiSynonyms(){
+		return dictionaryService.findWordToProcess(WordStates.AI_SYNONYMS.getId() | WordStates.FAKE.getId(), WordStates.MERR_WEBSTER.getId());
+	}
+
 	public long countWordsWithoutExamples() {
 		return dictionaryService.countWordsToProcess(
 				WordStates.WITH_EXAMPLES.getId() | WordStates.FAKE.getId(),
 				WordStates.MERR_WEBSTER.getId()
 		);
+	}
+
+	@Transactional
+	public WordDto enrichWithAiSynonyms(DictWord dw){
+		DictWord detailed = loadDetailedWord(dw);
+		List<String> synonyms = openAIRequester.getSynonyms(detailed.getWordText());
+		if (synonyms.isEmpty())
+			return null;
+		log.debug("enrichWithAiSynonyms for {}: {}", detailed.getWordText(), synonyms);
+
+		Set<String> uniqueSynonyms = synonyms.stream()
+				.map(StringTools::normalize)
+				.filter(s -> !s.isBlank())
+				.filter(s -> !s.equalsIgnoreCase(detailed.getWordText()))
+				.collect(Collectors.toCollection(LinkedHashSet::new));
+
+		for (String synonymText : uniqueSynonyms) {
+			DictWord synonymWord = dictionaryService.findByWordText(synonymText)
+				.orElseGet(() -> {
+					DictWord newSynonym = new DictWord();
+					newSynonym.setWordText(synonymText);
+					return dictionaryService.save(newSynonym);
+				});
+
+			boolean alreadyLinked = detailed.getSynonyms().stream()
+					.anyMatch(link -> link.getSynonym() != null
+							&& link.getSynonym().getWordText() != null
+							&& link.getSynonym().getWordText().equalsIgnoreCase(synonymText));
+
+			if (!alreadyLinked) {
+				DictWordSynonym relation = new DictWordSynonym();
+				relation.setLemma(detailed);
+				relation.setSynonym(synonymWord);
+				detailed.getSynonyms().add(relation);
+			}
+		}
+
+		detailed.addState(WordStates.AI_SYNONYMS);
+		return dtoFromDict(dictionaryService.save(detailed));
+	}
+
+	@Transactional
+	public WordDto enrichWithAiSynonyms(String word){
+		Optional<DictWord> dw = dictionaryService.findByWordText(word);
+		if(dw.isPresent() && dw.get().hasNoState(WordStates.AI_SYNONYMS)) {
+			return enrichWithAiSynonyms(dw.get());
+		}
+		return null;
 	}
 
 	@Transactional
@@ -339,4 +391,3 @@ public class WordProcessingService {
 		dictWord.addState(WordStates.MERR_WEBSTER);
 	}
 }
-

@@ -29,6 +29,13 @@ public enum SystemPrompt {
 
 		{format}
 		""")
+	),
+	SYNONYMS(new PromptTemplate("""
+		You are a professional philologist specializing in modern English.
+		Generate few, contemporary English synonyms for the given word, if it has any.
+
+		{format}
+		""")
 	);
 
 	private final PromptTemplate systemPrompt;

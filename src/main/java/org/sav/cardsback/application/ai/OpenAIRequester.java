@@ -40,4 +40,27 @@ public class OpenAIRequester {
 		}
 		return examplesResp.examples();
 	}
+
+	public List<String> getSynonyms(String word){
+
+		record SynonymResponse(List<String> synonyms) {}
+		BeanOutputConverter<SynonymResponse> synonymsConverter =
+				new BeanOutputConverter<>(SynonymResponse.class);
+
+		String respJson = gemmaService.callModel(
+				"gemma-4-31b-it",
+				SystemPrompt.SYNONYMS,
+				Map.of("format", synonymsConverter.getFormat()),
+				word,
+				GoogleGenAiThinkingLevel.HIGH
+		);
+
+		SynonymResponse synonymsResp = synonymsConverter.convert(respJson);
+
+		log.debug("Response: {}", synonymsResp);
+		if (synonymsResp.synonyms().isEmpty()) {
+			throw new IllegalStateException("Empty AI response");
+		}
+		return synonymsResp.synonyms();
+	}
 }
