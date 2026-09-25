@@ -40,6 +40,10 @@ public class DictWord {
 	@JsonIgnoreProperties("lemma")
 	private List<DictWordExamples> examples = new ArrayList<>();
 
+	@OneToMany(mappedBy = "lemma", cascade = CascadeType.ALL, orphanRemoval = true)
+	@JsonIgnoreProperties("lemma")
+	private List<DictWordSynonym> synonyms = new ArrayList<>();
+
 	public void addState(WordStates s){
 		state = state | s.getId();
 	}

@@ -78,4 +78,10 @@ public class DictionaryController {
 	public ResponseEntity<WordDto> enrichWithAiTranslations(@RequestParam String word){
 		return ResponseEntity.ok(wordProcessingService.enrichWithAiTranslations(word));
 	}
+
+	@PreAuthorize("hasRole('CARDS_ADMIN')")
+	@GetMapping("/enrichWithAiSynonyms")
+	public ResponseEntity<WordDto> enrichWithAiSynonyms(@RequestParam String word){
+		return ResponseEntity.ok(wordProcessingService.enrichWithAiSynonyms(word));
+	}
 }
