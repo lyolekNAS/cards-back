@@ -219,7 +219,7 @@ public class WordProcessingService {
 				.collect(Collectors.toCollection(LinkedHashSet::new));
 
 		for (String synonymText : uniqueSynonyms) {
-			DictWord synonymWord = processWord(synonymText);
+			DictWord synonymWord = getDictWord(synonymText);
 
 			boolean alreadyLinked = detailed.getSynonyms().stream()
 					.anyMatch(link -> link.getSynonym() != null
