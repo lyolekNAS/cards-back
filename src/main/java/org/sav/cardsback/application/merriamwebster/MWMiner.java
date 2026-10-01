@@ -11,6 +11,7 @@ import org.springframework.scheduling.TaskScheduler;
 import org.springframework.stereotype.Component;
 
 import java.time.Instant;
+import java.util.Optional;
 import java.util.concurrent.ThreadLocalRandom;
 
 @Component
@@ -41,8 +42,10 @@ public class MWMiner {
 		try {
 			log.debug(">>> starting action");
 
-			DictWord dw = service.findUnprocessedWord().orElseThrow();
-			service.processWord(dw.getWordText());
+			Optional<DictWord> dw = service.findUnprocessedWord();
+			dw.ifPresentOrElse(word -> service.processWord(word.getWordText()), () -> {
+				log.debug(">>> no unprocessed words found");
+			});
 
 		} catch (Exception e) {
 			log.error("Error in miner", e);
