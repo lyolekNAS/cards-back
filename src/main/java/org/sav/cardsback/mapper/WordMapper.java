@@ -12,6 +12,7 @@ import org.sav.cardsback.entity.DictTrans;
 import org.sav.cardsback.entity.DictWordDefinition;
 import org.sav.cardsback.entity.DictWordForm;
 import org.sav.cardsback.entity.DictWordExamples;
+import org.sav.cardsback.entity.DictWordSynonym;
 import org.sav.cardsback.entity.Word;
 
 import java.util.List;
@@ -33,6 +34,7 @@ public interface WordMapper {
 			target = "isAITranslated",
 			expression = "java(isAiTranslated(entity.getDictWord()))"
 	)
+	@Mapping(target = "synonyms", expression = "java(mapSynonyms(entity.getDictWord()))")
 	WordDto toDto(Word entity);
 
 	@BeanMapping(ignoreByDefault = true)
@@ -49,6 +51,7 @@ public interface WordMapper {
 			expression = "java(calcRarity(entity))"
 	)
 	@Mapping(target = "examples", expression = "java(mapExamples(entity))")
+	@Mapping(target = "synonyms", expression = "java(mapSynonyms(entity))")
 	@Mapping(
 			target = "isAITranslated",
 			expression = "java(isAiTranslated(entity))"
@@ -120,6 +123,18 @@ public interface WordMapper {
 
 		return dictWord.getExamples().stream()
 				.map(example -> new ExampleDto(example.getId(), example.getExample()))
+				.toList();
+	}
+
+	default List<String> mapSynonyms(DictWord dictWord) {
+		if (dictWord == null || dictWord.getSynonyms() == null) {
+			return List.of();
+		}
+
+		return dictWord.getSynonyms().stream()
+				.map(s -> s.getSynonym().getWordText())
+				.filter(s -> s != null && !s.isBlank())
+				.distinct()
 				.toList();
 	}
 

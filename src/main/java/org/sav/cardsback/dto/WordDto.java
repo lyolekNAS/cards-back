@@ -34,4 +34,5 @@ public class WordDto {
 	boolean isAITranslated;
 	boolean isKnown;
 	boolean isUninteresting;
+	List<String> synonyms;
 }
