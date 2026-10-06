@@ -208,26 +208,26 @@ public class WordProcessingService {
 	public WordDto enrichWithAiSynonyms(DictWord dw){
 		DictWord detailed = loadDetailedWord(dw);
 		List<String> synonyms = openAIRequester.getSynonyms(detailed.getWordText());
-		if (synonyms.isEmpty())
-			return null;
-		log.debug("enrichWithAiSynonyms for {}: {}", detailed.getWordText(), synonyms);
+		if (!synonyms.isEmpty()) {
+			log.debug("enrichWithAiSynonyms for {}: {}", detailed.getWordText(), synonyms);
 
-		Set<String> uniqueSynonyms = synonyms.stream()
-				.map(StringTools::normalize)
-				.filter(s -> !s.isBlank())
-				.filter(s -> !s.equalsIgnoreCase(detailed.getWordText()))
-				.collect(Collectors.toCollection(LinkedHashSet::new));
+			Set<String> uniqueSynonyms = synonyms.stream()
+					.map(StringTools::normalize)
+					.filter(s -> !s.isBlank())
+					.filter(s -> !s.equalsIgnoreCase(detailed.getWordText()))
+					.collect(Collectors.toCollection(LinkedHashSet::new));
 
-		for (String synonymText : uniqueSynonyms) {
-			boolean alreadyLinked = detailed.getSynonyms().stream()
-					.anyMatch(link -> link.getSynonym() != null
-							&& link.getSynonym().equalsIgnoreCase(synonymText));
+			for (String synonymText : uniqueSynonyms) {
+				boolean alreadyLinked = detailed.getSynonyms().stream()
+						.anyMatch(link -> link.getSynonym() != null
+								&& link.getSynonym().equalsIgnoreCase(synonymText));
 
-			if (!alreadyLinked) {
-				DictWordSynonym relation = new DictWordSynonym();
-				relation.setLemma(detailed);
-				relation.setSynonym(synonymText);
-				detailed.getSynonyms().add(relation);
+				if (!alreadyLinked) {
+					DictWordSynonym relation = new DictWordSynonym();
+					relation.setLemma(detailed);
+					relation.setSynonym(synonymText);
+					detailed.getSynonyms().add(relation);
+				}
 			}
 		}
 
