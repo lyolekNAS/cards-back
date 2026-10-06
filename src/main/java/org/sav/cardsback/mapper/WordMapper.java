@@ -132,7 +132,7 @@ public interface WordMapper {
 		}
 
 		return dictWord.getSynonyms().stream()
-				.map(s -> s.getSynonym().getWordText())
+				.map(DictWordSynonym::getSynonym)
 				.filter(s -> s != null && !s.isBlank())
 				.distinct()
 				.toList();

@@ -11,11 +11,10 @@ import lombok.Setter;
 @Table(
 	name = "dict_word_synonym",
 	uniqueConstraints = {
-		@UniqueConstraint(columnNames = {"wordId", "synonymWordId"})
+		@UniqueConstraint(columnNames = {"wordId", "synonymText"})
 	},
 	indexes = {
-		@Index(name = "idx_dict_word_synonym_word_id", columnList = "wordId"),
-		@Index(name = "idx_dict_word_synonym_synonym_word_id", columnList = "synonymWordId")
+		@Index(name = "idx_dict_word_synonym_word_id", columnList = "wordId")
 	}
 )
 public class DictWordSynonym {
@@ -28,9 +27,7 @@ public class DictWordSynonym {
 	@JsonIgnore
 	private DictWord lemma;
 
-	@ManyToOne(fetch = FetchType.LAZY)
-	@JoinColumn(name = "synonymWordId", nullable = false)
-	@JsonIgnore
-	private DictWord synonym;
+	@Column(name = "synonymText", nullable = false)
+	private String synonym;
 }
 

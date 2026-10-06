@@ -219,17 +219,14 @@ public class WordProcessingService {
 				.collect(Collectors.toCollection(LinkedHashSet::new));
 
 		for (String synonymText : uniqueSynonyms) {
-			DictWord synonymWord = getDictWord(synonymText);
-
 			boolean alreadyLinked = detailed.getSynonyms().stream()
 					.anyMatch(link -> link.getSynonym() != null
-							&& link.getSynonym().getWordText() != null
-							&& link.getSynonym().getWordText().equalsIgnoreCase(synonymText));
+							&& link.getSynonym().equalsIgnoreCase(synonymText));
 
 			if (!alreadyLinked) {
 				DictWordSynonym relation = new DictWordSynonym();
 				relation.setLemma(detailed);
-				relation.setSynonym(synonymWord);
+				relation.setSynonym(synonymText);
 				detailed.getSynonyms().add(relation);
 			}
 		}
