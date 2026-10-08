@@ -6,11 +6,10 @@ import org.sav.cardsback.domain.dictionary.repository.DictWordFormRepository;
 import org.sav.cardsback.domain.dictionary.repository.DictionaryRepository;
 import org.sav.cardsback.domain.dictionary.repository.UserDictWordRepository;
 import org.sav.cardsback.dto.*;
-import org.sav.cardsback.entity.DictWord;
-import org.sav.cardsback.entity.Word;
-import org.sav.cardsback.entity.WordState;
+import org.sav.cardsback.entity.*;
 import org.sav.cardsback.mapper.WordMapper;
 import org.sav.cardsback.domain.dictionary.repository.WordRepository;
+import org.sav.cardsback.utils.StringTools;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -37,6 +36,7 @@ public class WordService {
 	private final WordProcessingService wordProcessingService;
 	private final WordStatisticsService statisticsService;
 	private final WordTrainingService trainingService;
+	private final DictionaryRepository dictionaryRepository;
 
 	// ==================== User Flashcard Management ====================
 
@@ -70,6 +70,38 @@ public class WordService {
 			});
 		}
 		return wordDto;
+	}
+
+	public List<String> extractKnownWords(Long userId, String text) {
+		List<String> knownWords = new ArrayList<>();
+		List<String> words = StringTools.parseWords(text);
+		for (String word : words) {
+			log.info(">>>> Checking if word is known: {}", word);
+			Optional<DictWordForm> lemmaWordOpt = dictWordFormRepository.findByWordText(word);
+			if (lemmaWordOpt.isPresent()) {
+				DictWordForm lemmaWord = lemmaWordOpt.get();
+				if (lemmaWord.getLemma() == null) {
+					DictWord dictWord = dictionaryRepository.findByWordText(word)
+							.orElseGet(() -> {
+								DictWord fallback = new DictWord();
+								fallback.setWordText(word);
+								return fallback;
+							});
+					lemmaWord.setLemma(dictWord);
+				}
+				log.info(">>>> Found lemma for word {}: {}", word, lemmaWord.getLemma().getId());
+				Optional<Word> foundWord = wordRepository.findByUserIdAndEnglish(userId, lemmaWord.getLemma().getWordText());
+				if(foundWord.isPresent()) {
+					knownWords.add(word);
+				}else{
+					Optional<UserDictWord> userDictWord = userDictWordRepository.findByUserIdAndLemma_Id(userId, lemmaWord.getLemma().getId());
+					if(userDictWord.isPresent()) {
+						knownWords.add(word);
+					}
+				}
+			}
+		}
+		return knownWords;
 	}
 
 	public Word findByIdAndUserId(Long id, Long userId) {

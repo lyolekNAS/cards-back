@@ -35,4 +35,5 @@ public class WordDto {
 	boolean isKnown;
 	boolean isUninteresting;
 	List<String> synonyms;
+	List<String> knownWords;
 }

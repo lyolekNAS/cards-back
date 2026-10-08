@@ -72,7 +72,7 @@ public class WordController {
 	public ResponseEntity<WordDto> findWord(@AuthenticationPrincipal Jwt jwt, @RequestParam("w") String w){
 		Long userId = getUserId(jwt);
 		log.debug(">>>>>> findWord {} for user {}", w, userId);
-		WordDto wordDto = enrichWordDto(wordService.findByUserIdAndEnglish(userId, w), true);
+		WordDto wordDto = enrichWordDto(jwt, wordService.findByUserIdAndEnglish(userId, w), true);
 		log.debug(">>>>>> wordDto={}", wordDto);
 		return ResponseEntity.ok(wordDto);
 	}
@@ -94,7 +94,7 @@ public class WordController {
 		if(word == null){
 			return ResponseEntity.ok().build();
 		}
-		WordDto wordDto = enrichWordDto(wordMapper.toDto(word), true);
+		WordDto wordDto = enrichWordDto(jwt, wordMapper.toDto(word), true);
 		log.debug(">>>>>> getById={}", wordDto);
 		return ResponseEntity.ok(wordDto);
 	}
@@ -116,7 +116,7 @@ public class WordController {
 		if(word == null){
 			return ResponseEntity.ok().build();
 		}
-		WordDto wordDto = enrichWordDto(wordMapper.toDto(word), false);
+		WordDto wordDto = enrichWordDto(jwt, wordMapper.toDto(word), false);
 		wordDto.setLang(selectTrainingLang(word));
 		log.debug(">>>>>> found word {}", wordDto);
 		return ResponseEntity.ok(wordDto);
@@ -166,9 +166,11 @@ public class WordController {
 		return jwt.getClaim(CLAIM_USER_ID);
 	}
 
-	private WordDto enrichWordDto(WordDto wordDto, boolean randomLang) {
+	private WordDto enrichWordDto(Jwt jwt, WordDto wordDto, boolean randomLang) {
 		wordDto.setExamples(dictionaryService.getExamples(wordDto.getDictWordId()));
 		wordDto.setLang(randomLang ? randomLang() : null);
+		String text = wordDto.getDescription() + " " + wordDto.getExamples().stream().map(ExampleDto::text).reduce("", (a, b) -> a + " " + b);
+		wordDto.setKnownWords(wordService.extractKnownWords(getUserId(jwt), text));
 		return wordDto;
 	}
 
