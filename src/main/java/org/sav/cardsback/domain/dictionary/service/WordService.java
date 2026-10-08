@@ -76,7 +76,6 @@ public class WordService {
 		List<String> knownWords = new ArrayList<>();
 		List<String> words = StringTools.parseWords(text);
 		for (String word : words) {
-			log.info(">>>> Checking if word is known: {}", word);
 			Optional<DictWordForm> lemmaWordOpt = dictWordFormRepository.findByWordText(word);
 			if (lemmaWordOpt.isPresent()) {
 				DictWordForm lemmaWord = lemmaWordOpt.get();
@@ -89,7 +88,6 @@ public class WordService {
 							});
 					lemmaWord.setLemma(dictWord);
 				}
-				log.info(">>>> Found lemma for word {}: {}", word, lemmaWord.getLemma().getId());
 				Optional<Word> foundWord = wordRepository.findByUserIdAndEnglish(userId, lemmaWord.getLemma().getWordText());
 				if(foundWord.isPresent()) {
 					knownWords.add(word);
