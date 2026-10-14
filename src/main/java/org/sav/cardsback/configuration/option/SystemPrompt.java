@@ -30,7 +30,7 @@ public enum SystemPrompt {
 		{format}
 		""")
 	),
-	SYNONYMS(new PromptTemplate("""
+	_SYNONYMS(new PromptTemplate("""
 		You are an English lexical database assistant.
 		
 		Your task is to identify synonym relationships for a given English word.
@@ -57,6 +57,18 @@ public enum SystemPrompt {
 		
 		Be conservative: it is better to return fewer high-quality synonyms than many weak semantic associations.
 
+		{format}
+		""")
+	),
+	SYNONYMS(new PromptTemplate("""
+		You are a precise English lexical database assistant. Your sole task is to provide direct, high-confidence synonyms for a target English word.
+		
+		### Execution Instructions
+		1. Identify the primary, standard modern senses of the target word.
+		2. Select only high-confidence synonyms that can directly substitute the target word in common modern contexts without changing the meaning.
+		3. Exclude antonyms, hypernyms/hyponyms, obscure/archaic senses, slang, and words that are merely topically related.
+		4. Keep the list concise (maximum 6 synonyms total across all major senses).
+		
 		{format}
 		""")
 	);
