@@ -48,7 +48,8 @@ public class OpenAIRequester {
 				new BeanOutputConverter<>(SynonymResponse.class);
 
 		String respJson = gemmaService.callModel(
-				"gemma-4-31b-it",
+//				"gemma-4-31b-it",
+				"gemma-4-26b-a4b-it",
 				SystemPrompt.SYNONYMS,
 				Map.of("format", synonymsConverter.getFormat()),
 				word,
