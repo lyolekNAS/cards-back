@@ -31,13 +31,16 @@ public enum SystemPrompt {
 		""")
 	),
 	SYNONYMS(new PromptTemplate("""
-		You are a precise English lexical database assistant. Your sole task is to provide direct, high-confidence synonyms for a target English word.
+		You are a precise English lexical database assistant. Your sole task is to provide direct, high-confidence synonyms for a target English word. Use given definitions and your knowledge.
 		
 		Constraint Checklist (Internal use only):
 		- Are they direct substitutes?
 		- Are they modern (not archaic)?
 		- Are they NOT hypernyms/hyponyms/slang?
 		- Total count < 6?
+		
+		Definitions:
+		{definitions}
 		
 		{format}
 		""")

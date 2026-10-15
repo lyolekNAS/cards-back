@@ -4,6 +4,8 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.sav.cardsback.application.translatin.GemmaService;
 import org.sav.cardsback.configuration.option.SystemPrompt;
+import org.sav.cardsback.domain.dictionary.service.WordService;
+import org.sav.cardsback.dto.WordDto;
 import org.springframework.ai.converter.BeanOutputConverter;
 import org.springframework.ai.google.genai.common.GoogleGenAiThinkingLevel;
 import org.springframework.stereotype.Service;
@@ -41,18 +43,19 @@ public class OpenAIRequester {
 		return examplesResp.examples();
 	}
 
-	public List<String> getSynonyms(String word){
+	public List<String> getSynonyms(WordDto word){
 
 		record SynonymResponse(List<String> synonyms) {}
 		BeanOutputConverter<SynonymResponse> synonymsConverter =
 				new BeanOutputConverter<>(SynonymResponse.class);
 
+
 		String respJson = gemmaService.callModel(
 //				"gemma-4-31b-it",
 				"gemma-4-26b-a4b-it",
 				SystemPrompt.SYNONYMS,
-				Map.of("format", synonymsConverter.getFormat()),
-				word,
+				Map.of("definitions", word.getDescription(), "format", synonymsConverter.getFormat()),
+				word.getEnglish(),
 				GoogleGenAiThinkingLevel.HIGH
 		);
 

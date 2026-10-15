@@ -207,7 +207,7 @@ public class WordProcessingService {
 	@Transactional
 	public WordDto enrichWithAiSynonyms(DictWord dw){
 		DictWord detailed = loadDetailedWord(dw);
-		List<String> synonyms = openAIRequester.getSynonyms(detailed.getWordText());
+		List<String> synonyms = openAIRequester.getSynonyms(dtoFromDict(detailed));
 		if (!synonyms.isEmpty()) {
 			log.debug("enrichWithAiSynonyms for {}: {}", detailed.getWordText(), synonyms);
 
